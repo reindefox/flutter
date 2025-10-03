@@ -12,9 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Swapper',
-      theme: ThemeData(
-        useMaterial3: true,
-      ),
+      theme: ThemeData(useMaterial3: true),
       home: const HomePage(),
     );
   }
@@ -49,16 +47,18 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget buildNavigationButton(BuildContext context, String text, Widget destination) {
+  Widget buildNavigationButton(
+    BuildContext context,
+    String text,
+    Widget destination,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          minimumSize: const Size(200, 50),
-        ),
+        style: ElevatedButton.styleFrom(minimumSize: const Size(200, 50)),
         onPressed: () {
           Navigator.push(
-            context, 
+            context,
             MaterialPageRoute(builder: (context) => destination),
           );
         },
@@ -77,7 +77,7 @@ class ContentPage extends StatelessWidget {
     super.key,
     required this.title,
     required this.color,
-    required this.body
+    required this.body,
   });
 
   @override
@@ -87,8 +87,38 @@ class ContentPage extends StatelessWidget {
         backgroundColor: color.withValues(alpha: 0.8),
         title: Text(title),
       ),
-      body: body
+      body: body,
     );
   }
 }
 
+// class ListRemoveExamplePage extends StatefulWidget {
+//   const ListRemoveExamplePage({super.key});
+//
+//   @override
+//   State<ListRemoveExamplePage> createState() => _ListRemoveExamplePageState();
+// }
+//
+// class _ListRemoveExamplePageState extends State<ListRemoveExamplePage> {
+//   final items = List.generate(100, (index) => 'Item ${index + 1}');
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: ListView(
+//         children: items
+//             .map(
+//               (item) => GestureDetector(
+//                 key: ValueKey(item), // <----
+//                 onTap: () => setState(() => items.remove(item)),
+//                 child: Padding(
+//                   padding: const EdgeInsets.all(16),
+//                   child: Text(item),
+//                 ),
+//               ),
+//             )
+//             .toList(),
+//       ),
+//     );
+//   }
+// }
