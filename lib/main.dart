@@ -35,16 +35,14 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'Выберите страницу для просмотра:',
+              'Выберите страницу для просмотра',
               style: TextStyle(fontSize: 20),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
-            buildNavigationButton(context, 'Информация', InfoPage()),
-            buildNavigationButton(context, 'Галерея', GalleryPage()),
-            buildNavigationButton(context, 'Контакты', ContactsPage()),
-            buildNavigationButton(context, 'Настройки', SettingsPage()),
-            buildNavigationButton(context, 'О приложении', AboutPage()),
+            buildNavigationButton(context, 'Column', WidgetColumnPage()),
+            buildNavigationButton(context, 'ListView', ListViewPage()),
+            buildNavigationButton(context, 'ListView.separated', ListViewSeparatedPage()),
           ],
         ),
       ),
@@ -72,16 +70,14 @@ class HomePage extends StatelessWidget {
 
 class ContentPage extends StatelessWidget {
   final String title;
-  final String content;
-  final IconData icon;
   final Color color;
+  final Widget body;
 
   const ContentPage({
     super.key,
     required this.title,
-    required this.content,
-    required this.icon,
     required this.color,
+    required this.body
   });
 
   @override
@@ -91,33 +87,7 @@ class ContentPage extends StatelessWidget {
         backgroundColor: color.withValues(alpha: 0.8),
         title: Text(title),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 80, color: color),
-              const SizedBox(height: 30),
-              Text(
-                content,
-                style: const TextStyle(fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 50),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: color,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(200, 50),
-                ),
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Вернуться на главную', style: TextStyle(fontSize: 16)),
-              ),
-            ],
-          ),
-        ),
-      ),
+      body: body
     );
   }
 }
