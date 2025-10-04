@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:project/pages.dart';
+import 'package:project/pages/alertsPage.dart';
+import 'package:project/pages/cicdPage.dart';
+import 'package:project/pages/logsPage.dart';
+import 'package:project/pages/prometheusPage.dart';
+import 'package:project/pages/serverInfoPage.dart';
 
 void main() {
   runApp(const MyApp());
