@@ -37,9 +37,9 @@ class _WidgetColumnPageState extends State<WidgetColumnPage> {
     });
   }
 
-  void _removePing(int index) {
+  void _removePing(String time) {
     setState(() {
-      pings.removeAt(index);
+      pings.removeWhere((ping) => ping['time'] == time);
     });
   }
 
@@ -104,7 +104,7 @@ class _WidgetColumnPageState extends State<WidgetColumnPage> {
                           const SizedBox(width: 10),
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _removePing(i),
+                            onPressed: () => _removePing(pings[i]['time']),
                           ),
                         ],
                       ),

@@ -59,9 +59,9 @@ class _ListViewPageState extends State<ListViewPage> {
     });
   }
 
-  void _removeContainer(int index) {
+  void _removeContainer(String name) {
     setState(() {
-      containers.removeAt(index);
+      containers.removeWhere((container) => container['name'] == name);
     });
   }
 
@@ -120,9 +120,9 @@ class _ListViewPageState extends State<ListViewPage> {
                           : _startContainer(index),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.grey),
+                      icon: const Icon(Icons.delete, color: Colors.red),
                       tooltip: 'Удалить',
-                      onPressed: () => _removeContainer(index),
+                      onPressed: () => _removeContainer(container['name']),
                     ),
                   ],
                 ),

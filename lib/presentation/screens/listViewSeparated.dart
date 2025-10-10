@@ -62,9 +62,9 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
     });
   }
 
-  void _removeService(int index) {
+  void _removeService(String name) {
     setState(() {
-      services.removeAt(index);
+      services.removeWhere((service) => service['name'] == name);
     });
   }
 
@@ -143,7 +143,7 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.grey),
                           tooltip: 'Удалить',
-                          onPressed: () => _removeService(index),
+                          onPressed: () => _removeService(service['name']),
                         ),
                       ],
                     ),
