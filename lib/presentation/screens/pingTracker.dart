@@ -51,6 +51,10 @@ class _WidgetColumnPageState extends State<WidgetColumnPage> {
 
   @override
   Widget build(BuildContext context) {
+    final servers = [
+      {'name': 'Server 1', 'status': 'Доступен'}
+    ];
+
     return ContentPage(
       title: 'Пинги',
       color: Colors.green,

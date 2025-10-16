@@ -16,7 +16,7 @@ class ContentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: color.withValues(alpha: 0.8),
+        backgroundColor: color.withOpacity(0.8),
         title: Text(title),
       ),
       body: body,
