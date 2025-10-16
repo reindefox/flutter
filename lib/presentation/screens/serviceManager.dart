@@ -1,7 +1,6 @@
-import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'base/contentPage.dart';
+import 'package:project/state/service_state.dart';
 
 class ServicesPage extends StatefulWidget {
   const ServicesPage({super.key});
@@ -16,76 +15,6 @@ class ListViewSeparatedPage extends ServicesPage {
 
 class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
   final TextEditingController _controller = TextEditingController();
-  final List<Map<String, dynamic>> services = [];
-  final List<String> availableServices = [
-    'Сервис A',
-    'Сервис B',
-    'Сервис C',
-    'Сервис D',
-  ];
-  final Random _random = Random();
-
-  void _addService() {
-    final name = _controller.text.trim();
-    if (name.isEmpty) return;
-    if (availableServices.contains(name)) {
-      _controller.clear();
-      return;
-    }
-    setState(() {
-      availableServices.add(name);
-    });
-    _controller.clear();
-  }
-
-  void _startService(int index) {
-    if (services[index]['status'] == 'Запущен') return;
-
-    setState(() {
-      services[index]['log'] = 'Запуск сервиса...';
-    });
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-
-      setState(() {
-        services[index]['status'] = 'Запущен';
-        services[index]['log'] = 'Сервис запущен ✅';
-      });
-    });
-  }
-
-  void _stopService(int index) {
-    if (services[index]['status'] != 'Запущен') return;
-
-    setState(() {
-      services[index]['log'] = 'Остановка сервиса...';
-    });
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() {
-        services[index]['status'] = 'Остановлен';
-        services[index]['log'] = 'Сервис остановлен ⛔';
-      });
-    });
-  }
-
-  void _removeService(String name) {
-    setState(() {
-      services.removeWhere((service) => service['name'] == name);
-    });
-  }
-
-  void _addServiceFromAvailable(String name) {
-    setState(() {
-      services.add({
-        'name': name,
-        'status': 'Остановлен',
-        'log': 'Сервис добавлен из доступных',
-      });
-    });
-  }
 
   Color _statusColor(String status) {
     switch (status) {
@@ -101,6 +30,7 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
 
   @override
   Widget build(BuildContext context) {
+    final state = ServiceStateProvider.of(context);
     return ContentPage(
       title: 'Сервисы',
       color: Colors.orange,
@@ -121,7 +51,10 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
                 ),
                 const SizedBox(width: 10),
                 ElevatedButton(
-                  onPressed: _addService,
+                  onPressed: () {
+                    state.addAvailableService(_controller.text.trim());
+                    _controller.clear();
+                  },
                   child: const Text('Добавить'),
                 ),
               ],
@@ -134,16 +67,16 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
                   return isWide
                       ? Row(
                           children: [
-                            Expanded(child: _buildAvailableServicesCard()),
+                            Expanded(child: _buildAvailableServicesCard(state)),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildManagedServicesCard()),
+                            Expanded(child: _buildManagedServicesCard(state)),
                           ],
                         )
                       : Column(
                           children: [
-                            _buildAvailableServicesCard(),
+                            _buildAvailableServicesCard(state),
                             const SizedBox(height: 12),
-                            Expanded(child: _buildManagedServicesCard()),
+                            Expanded(child: _buildManagedServicesCard(state)),
                           ],
                         );
                 },
@@ -155,7 +88,7 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
     );
   }
 
-  Widget _buildAvailableServicesCard() {
+  Widget _buildAvailableServicesCard(ServiceState state) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -171,14 +104,14 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
             const SizedBox(height: 8),
             Expanded(
               child: ListView.builder(
-                itemCount: availableServices.length,
+                itemCount: state.availableServices.length,
                 itemBuilder: (context, index) {
-                  final serviceName = availableServices[index];
-                  final alreadyManaged = services.any((s) => s['name'] == serviceName);
+                  final serviceName = state.availableServices[index];
+                  final alreadyManaged = state.services.any((s) => s['name'] == serviceName);
                   return ListTile(
                     title: Text(serviceName),
                     trailing: ElevatedButton(
-                      onPressed: alreadyManaged ? null : () => _addServiceFromAvailable(serviceName),
+                      onPressed: alreadyManaged ? null : () => state.addServiceFromAvailable(serviceName),
                       child: const Text('Добавить'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -194,7 +127,7 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
     );
   }
 
-  Widget _buildManagedServicesCard() {
+  Widget _buildManagedServicesCard(ServiceState state) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -213,10 +146,10 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
             const Divider(height: 4),
             Expanded(
               child: ListView.separated(
-                itemCount: services.length,
+                itemCount: state.services.length,
                 separatorBuilder: (_, __) => const Divider(height: 1),
                 itemBuilder: (context, index) {
-                  final service = services[index];
+                  final service = state.services[index];
                   final status = service['status'] as String;
 
                   return ListTile(
@@ -238,12 +171,12 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
                             size: 22,
                           ),
                           tooltip: status == 'Запущен' ? 'Остановить' : 'Запустить',
-                          onPressed: () => status == 'Запущен' ? _stopService(index) : _startService(index),
+                          onPressed: () => status == 'Запущен' ? state.stopService(index) : state.startService(index),
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.grey, size: 20),
                           tooltip: 'Удалить',
-                          onPressed: () => _removeService(service['name']),
+                          onPressed: () => state.removeService(service['name'] as String),
                         ),
                       ],
                     ),

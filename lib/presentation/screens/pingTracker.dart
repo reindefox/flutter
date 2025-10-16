@@ -1,59 +1,14 @@
-import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'base/contentPage.dart';
+import 'package:project/state/ping_state.dart';
 
-class WidgetColumnPage extends StatefulWidget {
+class WidgetColumnPage extends StatelessWidget {
   const WidgetColumnPage({super.key});
 
   @override
-  State<WidgetColumnPage> createState() => _WidgetColumnPageState();
-}
-
-class _WidgetColumnPageState extends State<WidgetColumnPage> {
-  final List<Map<String, dynamic>> pings = [];
-  final Random _random = Random();
-
-  void _sendPing() {
-    final String time = DateTime.now().toLocal().toIso8601String().substring(
-      11,
-      19,
-    );
-
-    setState(() {
-      pings.add({'time': time, 'ping': null});
-    });
-    final int index = pings.length - 1;
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      final int pingValue = _random.nextInt(100) + 1;
-
-      if (index < pings.length) {
-        setState(() {
-          pings[index]['ping'] = pingValue;
-        });
-      }
-    });
-  }
-
-  void _removePing(String time) {
-    setState(() {
-      pings.removeWhere((ping) => ping['time'] == time);
-    });
-  }
-
-  void _clearPings() {
-    setState(() {
-      pings.clear();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final servers = [
-      {'name': 'Server 1', 'status': 'Доступен'}
-    ];
+    final state = PingStateProvider.of(context);
+    final pings = state.pings;
 
     return ContentPage(
       title: 'Пинги',
@@ -65,12 +20,12 @@ class _WidgetColumnPageState extends State<WidgetColumnPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                onPressed: _sendPing,
+                onPressed: state.sendPing,
                 child: const Text('Отправить пинг'),
               ),
               const SizedBox(width: 10),
               ElevatedButton(
-                onPressed: _clearPings,
+                onPressed: state.clearPings,
                 child: const Text('Очистить'),
               ),
             ],
@@ -82,9 +37,7 @@ class _WidgetColumnPageState extends State<WidgetColumnPage> {
                 children: [
                   for (int i = 0; i < pings.length; i++)
                     ListTile(
-                      title: Text(
-                        '${pings[i]['time']} / Проверка соединения до сервера...',
-                      ),
+                      title: Text('${pings[i]['time']} / Проверка соединения до сервера...'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -93,22 +46,18 @@ class _WidgetColumnPageState extends State<WidgetColumnPage> {
                             height: 30,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: pings[i]['ping'] == null
-                                  ? Colors.grey.shade300
-                                  : Colors.teal.shade100,
+                              color: pings[i]['ping'] == null ? Colors.grey.shade300 : Colors.teal.shade100,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               pings[i]['ping']?.toString() ?? '...',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                           const SizedBox(width: 10),
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _removePing(pings[i]['time']),
+                            onPressed: () => state.removePing(pings[i]['time'] as String),
                           ),
                         ],
                       ),

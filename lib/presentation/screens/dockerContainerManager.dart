@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'base/contentPage.dart';
+import 'package:project/state/container_state.dart';
 
 class ListViewPage extends StatefulWidget {
   const ListViewPage({super.key});
@@ -11,83 +11,14 @@ class ListViewPage extends StatefulWidget {
 
 class _ListViewPageState extends State<ListViewPage> {
   final TextEditingController _controller = TextEditingController();
-  final List<Map<String, dynamic>> containers = [];
-
-  final List<String> availableContainers = [
-    'nginx',
-    'redis',
-    'postgres',
-    'prometheus',
-  ];
-
-  void _addContainer() {
-    final name = _controller.text.trim();
-    if (name.isEmpty) return;
-    if (availableContainers.contains(name)) {
-      _controller.clear();
-      return;
-    }
-    setState(() {
-      availableContainers.add(name);
-    });
-    _controller.clear();
-  }
-
-  void _addContainerFromAvailable(String name) {
-    if (containers.any((c) => c['name'] == name)) return;
-    setState(() {
-      containers.add({
-        'name': name,
-        'running': false,
-        'log': 'Контейнер добавлен из доступных',
-      });
-    });
-  }
 
   Color _statusColor(bool running) {
     return running ? Colors.green : Colors.grey;
   }
 
-  void _startContainer(int index) {
-    if (containers[index]['running']) return;
-
-    setState(() {
-      containers[index]['log'] = 'Запуск контейнера...';
-    });
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() {
-        containers[index]['running'] = true;
-        containers[index]['log'] = 'Контейнер запущен ✅';
-      });
-    });
-  }
-
-  void _stopContainer(int index) {
-    if (!containers[index]['running']) return;
-
-    setState(() {
-      containers[index]['log'] = 'Остановка контейнера...';
-    });
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() {
-        containers[index]['running'] = false;
-        containers[index]['log'] = 'Контейнер остановлен ⛔';
-      });
-    });
-  }
-
-  void _removeContainer(String name) {
-    setState(() {
-      containers.removeWhere((container) => container['name'] == name);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final state = ContainerStateProvider.of(context);
     return ContentPage(
       title: 'Docker контейнеры',
       color: Colors.blue,
@@ -108,7 +39,10 @@ class _ListViewPageState extends State<ListViewPage> {
                 ),
                 const SizedBox(width: 10),
                 ElevatedButton(
-                  onPressed: _addContainer,
+                  onPressed: () {
+                    state.addAvailableContainer(_controller.text.trim());
+                    _controller.clear();
+                  },
                   child: const Text('Добавить'),
                 ),
               ],
@@ -121,16 +55,16 @@ class _ListViewPageState extends State<ListViewPage> {
                   return isWide
                       ? Row(
                           children: [
-                            Expanded(child: _buildAvailableContainersCard()),
+                            Expanded(child: _buildAvailableContainersCard(state)),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildManagedContainersCard()),
+                            Expanded(child: _buildManagedContainersCard(state)),
                           ],
                         )
                       : Column(
                           children: [
-                            _buildAvailableContainersCard(),
+                            _buildAvailableContainersCard(state),
                             const SizedBox(height: 12),
-                            Expanded(child: _buildManagedContainersCard()),
+                            Expanded(child: _buildManagedContainersCard(state)),
                           ],
                         );
                 },
@@ -142,7 +76,7 @@ class _ListViewPageState extends State<ListViewPage> {
     );
   }
 
-  Widget _buildAvailableContainersCard() {
+  Widget _buildAvailableContainersCard(ContainerState state) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -158,16 +92,16 @@ class _ListViewPageState extends State<ListViewPage> {
             const SizedBox(height: 8),
             Expanded(
               child: ListView.builder(
-                itemCount: availableContainers.length,
+                itemCount: state.availableContainers.length,
                 itemBuilder: (context, index) {
-                  final name = availableContainers[index];
-                  final alreadyManaged = containers.any((c) => c['name'] == name);
+                  final name = state.availableContainers[index];
+                  final alreadyManaged = state.containers.any((c) => c['name'] == name);
                   return ListTile(
                     dense: true,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     title: Text(name),
                     trailing: ElevatedButton(
-                      onPressed: alreadyManaged ? null : () => _addContainerFromAvailable(name),
+                      onPressed: alreadyManaged ? null : () => state.addContainerFromAvailable(name),
                       child: const Text('Добавить'),
                       style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
                     ),
@@ -181,7 +115,7 @@ class _ListViewPageState extends State<ListViewPage> {
     );
   }
 
-  Widget _buildManagedContainersCard() {
+  Widget _buildManagedContainersCard(ContainerState state) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -197,10 +131,10 @@ class _ListViewPageState extends State<ListViewPage> {
             const Divider(height: 4),
             Expanded(
               child: ListView.separated(
-                itemCount: containers.length,
+                itemCount: state.containers.length,
                 separatorBuilder: (_, __) => const Divider(height: 1),
                 itemBuilder: (context, index) {
-                  final container = containers[index];
+                  final container = state.containers[index];
                   final bool running = container['running'] as bool;
                   return ListTile(
                     dense: true,
@@ -217,12 +151,12 @@ class _ListViewPageState extends State<ListViewPage> {
                         IconButton(
                           icon: Icon(running ? Icons.stop_circle : Icons.play_circle_fill, color: running ? Colors.red : Colors.green, size: 22),
                           tooltip: running ? 'Остановить' : 'Запустить',
-                          onPressed: () => running ? _stopContainer(index) : _startContainer(index),
+                          onPressed: () => running ? state.stopContainer(index) : state.startContainer(index),
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.grey, size: 20),
                           tooltip: 'Удалить',
-                          onPressed: () => _removeContainer(container['name']),
+                          onPressed: () => state.removeContainer(container['name'] as String),
                         ),
                       ],
                     ),
