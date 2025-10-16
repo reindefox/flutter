@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project/state/user_state.dart';
+import 'package:project/shared/state/user_state.dart';
 import 'package:provider/provider.dart';
 
 class UserProfilePage extends StatelessWidget {

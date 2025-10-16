@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../base/contentPage.dart';
+import '../../../shared/widgets/content_page.dart';
 
 class MetricsPage extends StatefulWidget {
   const MetricsPage({super.key});

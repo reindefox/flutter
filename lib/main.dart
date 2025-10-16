@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:project/presentation/screens/base/rootShell.dart';
-import 'package:project/state/user_state.dart';
-import 'package:project/state/ping_state.dart';
-import 'package:project/state/container_state.dart';
-import 'package:project/state/service_state.dart';
+import 'package:project/app/root_shell.dart';
+import 'package:project/shared/state/user_state.dart';
+import 'package:project/shared/state/ping_state.dart';
+import 'package:project/shared/state/container_state.dart';
+import 'package:project/shared/state/service_state.dart';
 
 void main() {
   runApp(const MyApp());

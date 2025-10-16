@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../base/contentPage.dart';
-import 'package:project/state/service_state.dart';
+import '../../../shared/widgets/content_page.dart';
+import 'package:project/shared/state/service_state.dart';
 import 'package:provider/provider.dart';
 
 class ServicesPage extends StatefulWidget {
