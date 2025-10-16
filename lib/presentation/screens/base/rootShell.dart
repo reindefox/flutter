@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:project/presentation/screens/dashboard/homePage.dart';
+import 'package:project/presentation/screens/homePage.dart';
 import 'package:project/presentation/screens/userProfile.dart';
+import 'package:project/presentation/screens/logsPage.dart';
 
 class RootShell extends StatefulWidget {
   const RootShell({super.key});
@@ -14,6 +15,7 @@ class _RootShellState extends State<RootShell> {
 
   final List<Widget> _pages = const [
     _DashboardTab(),
+    LogsPage(),
     UserProfilePage(),
   ];
 
@@ -26,6 +28,7 @@ class _RootShellState extends State<RootShell> {
         onDestinationSelected: (i) => setState(() => _currentIndex = i),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Панель'),
+          NavigationDestination(icon: Icon(Icons.list_alt_outlined), selectedIcon: Icon(Icons.list_alt), label: 'Логи'),
           NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Профиль'),
         ],
       ),
