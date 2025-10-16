@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'base/contentPage.dart';
+import '../base/contentPage.dart';
 import 'package:project/state/ping_state.dart';
+import 'package:provider/provider.dart';
 
 class WidgetColumnPage extends StatelessWidget {
   const WidgetColumnPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final state = PingStateProvider.of(context);
+    final state = context.watch<PingState>();
     final pings = state.pings;
 
     return ContentPage(
@@ -57,7 +58,7 @@ class WidgetColumnPage extends StatelessWidget {
                           const SizedBox(width: 10),
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => state.removePing(pings[i]['time'] as String),
+                            onPressed: () => state.removePing(pings[i]['id'] as String),
                           ),
                         ],
                       ),

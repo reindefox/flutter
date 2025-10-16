@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:project/presentation/screens/dockerContainerManager.dart';
-import 'package:project/presentation/screens/serviceManager.dart';
-import 'package:project/presentation/screens/pingTracker.dart';
-import 'package:project/presentation/screens/metricsPage.dart';
+import 'package:project/presentation/screens/dashboard/dockerContainerManager.dart';
+import 'package:project/presentation/screens/dashboard/serviceManager.dart';
+import 'package:project/presentation/screens/dashboard/pingTracker.dart';
+import 'package:project/presentation/screens/dashboard/metricsPage.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});

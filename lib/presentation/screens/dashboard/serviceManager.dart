@@ -1,27 +1,40 @@
 import 'package:flutter/material.dart';
-import 'base/contentPage.dart';
-import 'package:project/state/container_state.dart';
+import '../base/contentPage.dart';
+import 'package:project/state/service_state.dart';
+import 'package:provider/provider.dart';
 
-class ListViewPage extends StatefulWidget {
-  const ListViewPage({super.key});
+class ServicesPage extends StatefulWidget {
+  const ServicesPage({super.key});
 
   @override
-  State<ListViewPage> createState() => _ListViewPageState();
+  State<ServicesPage> createState() => _ListViewSeparatedPageState();
 }
 
-class _ListViewPageState extends State<ListViewPage> {
+class ListViewSeparatedPage extends ServicesPage {
+  const ListViewSeparatedPage({super.key});
+}
+
+class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
   final TextEditingController _controller = TextEditingController();
 
-  Color _statusColor(bool running) {
-    return running ? Colors.green : Colors.grey;
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'Запущен':
+        return Colors.green;
+      case 'Ошибка':
+        return Colors.red;
+      case 'Остановлен':
+      default:
+        return Colors.grey;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ContainerStateProvider.of(context);
+    final state = context.watch<ServiceState>();
     return ContentPage(
-      title: 'Docker контейнеры',
-      color: Colors.blue,
+      title: 'Сервисы',
+      color: Colors.orange,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -32,7 +45,7 @@ class _ListViewPageState extends State<ListViewPage> {
                   child: TextField(
                     controller: _controller,
                     decoration: const InputDecoration(
-                      labelText: 'Имя контейнера',
+                      labelText: 'Имя сервиса',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -40,7 +53,7 @@ class _ListViewPageState extends State<ListViewPage> {
                 const SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: () {
-                    state.addAvailableContainer(_controller.text.trim());
+                    state.addAvailableService(_controller.text.trim());
                     _controller.clear();
                   },
                   child: const Text('Добавить'),
@@ -55,16 +68,16 @@ class _ListViewPageState extends State<ListViewPage> {
                   return isWide
                       ? Row(
                           children: [
-                            Expanded(child: _buildAvailableContainersCard(state)),
+                            Expanded(child: _buildAvailableServicesCard(state)),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildManagedContainersCard(state)),
+                            Expanded(child: _buildManagedServicesCard(state)),
                           ],
                         )
                       : Column(
                           children: [
-                            _buildAvailableContainersCard(state),
+                            _buildAvailableServicesCard(state),
                             const SizedBox(height: 12),
-                            Expanded(child: _buildManagedContainersCard(state)),
+                            Expanded(child: _buildManagedServicesCard(state)),
                           ],
                         );
                 },
@@ -76,7 +89,7 @@ class _ListViewPageState extends State<ListViewPage> {
     );
   }
 
-  Widget _buildAvailableContainersCard(ContainerState state) {
+  Widget _buildAvailableServicesCard(ServiceState state) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -86,24 +99,24 @@ class _ListViewPageState extends State<ListViewPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Доступные контейнеры:',
+              'Доступные сервисы:',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Expanded(
               child: ListView.builder(
-                itemCount: state.availableContainers.length,
+                itemCount: state.availableServices.length,
                 itemBuilder: (context, index) {
-                  final name = state.availableContainers[index];
-                  final alreadyManaged = state.containers.any((c) => c['name'] == name);
+                  final serviceName = state.availableServices[index];
+                  final alreadyManaged = state.services.any((s) => s['name'] == serviceName);
                   return ListTile(
-                    dense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    title: Text(name),
+                    title: Text(serviceName),
                     trailing: ElevatedButton(
-                      onPressed: alreadyManaged ? null : () => state.addContainerFromAvailable(name),
+                      onPressed: alreadyManaged ? null : () => state.addServiceFromAvailable(serviceName),
                       child: const Text('Добавить'),
-                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
                     ),
                   );
                 },
@@ -115,7 +128,7 @@ class _ListViewPageState extends State<ListViewPage> {
     );
   }
 
-  Widget _buildManagedContainersCard(ContainerState state) {
+  Widget _buildManagedServicesCard(ServiceState state) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -126,37 +139,45 @@ class _ListViewPageState extends State<ListViewPage> {
           children: [
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              child: Text('Управление контейнерами:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              child: Text(
+                'Управление сервисами:',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
             const Divider(height: 4),
             Expanded(
               child: ListView.separated(
-                itemCount: state.containers.length,
+                itemCount: state.services.length,
                 separatorBuilder: (_, __) => const Divider(height: 1),
                 itemBuilder: (context, index) {
-                  final container = state.containers[index];
-                  final bool running = container['running'] as bool;
+                  final service = state.services[index];
+                  final status = service['status'] as String;
+
                   return ListTile(
                     dense: true,
-                    title: Text(container['name'], style: const TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text(container['log'], maxLines: 1, overflow: TextOverflow.ellipsis),
+                    title: Text(service['name'], style: const TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Text(service['log'], maxLines: 1, overflow: TextOverflow.ellipsis),
                     leading: Chip(
-                      label: Text(running ? 'Запущен' : 'Остановлен', style: const TextStyle(color: Colors.white, fontSize: 12)),
-                      backgroundColor: _statusColor(running),
+                      label: Text(status, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                      backgroundColor: _statusColor(status),
                       visualDensity: VisualDensity.compact,
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: Icon(running ? Icons.stop_circle : Icons.play_circle_fill, color: running ? Colors.red : Colors.green, size: 22),
-                          tooltip: running ? 'Остановить' : 'Запустить',
-                          onPressed: () => running ? state.stopContainer(index) : state.startContainer(index),
+                          icon: Icon(
+                            status == 'Запущен' ? Icons.stop_circle : Icons.play_circle_fill,
+                            color: status == 'Запущен' ? Colors.red : Colors.green,
+                            size: 22,
+                          ),
+                          tooltip: status == 'Запущен' ? 'Остановить' : 'Запустить',
+                          onPressed: () => status == 'Запущен' ? state.stopService(index) : state.startService(index),
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.grey, size: 20),
                           tooltip: 'Удалить',
-                          onPressed: () => state.removeContainer(container['name'] as String),
+                          onPressed: () => state.removeService(service['name'] as String),
                         ),
                       ],
                     ),

@@ -4,8 +4,9 @@ class PingState extends ChangeNotifier {
   final List<Map<String, dynamic>> pings = [];
 
   void sendPing() {
+    final String id = DateTime.now().microsecondsSinceEpoch.toString();
     final String time = DateTime.now().toLocal().toIso8601String().substring(11, 19);
-    pings.add({'time': time, 'ping': null});
+    pings.add({'id': id, 'time': time, 'ping': null});
     notifyListeners();
 
     final int index = pings.length - 1;
@@ -22,8 +23,8 @@ class PingState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removePing(String time) {
-    pings.removeWhere((ping) => ping['time'] == time);
+  void removePing(String id) {
+    pings.removeWhere((ping) => ping['id'] == id);
     notifyListeners();
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:project/presentation/screens/homePage.dart';
-import 'package:project/presentation/screens/base/userProfile.dart';
+import 'package:project/presentation/screens/dashboard/homePage.dart';
+import 'package:project/presentation/screens/userProfile.dart';
 
 class RootShell extends StatefulWidget {
   const RootShell({super.key});

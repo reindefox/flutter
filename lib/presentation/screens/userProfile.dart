@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:project/state/user_state.dart';
+import 'package:provider/provider.dart';
 
 class UserProfilePage extends StatelessWidget {
   const UserProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final state = UserStateProvider.of(context);
+    final state = context.watch<UserState>();
     final user = state.currentUser;
 
     final TextEditingController nameController = TextEditingController(text: user['name'] ?? '');
@@ -42,31 +43,6 @@ class UserProfilePage extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 24),
-            const Text('Редактировать', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Имя', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  state.updateUser(name: nameController.text.trim(), email: emailController.text.trim());
-                  FocusScope.of(context).unfocus();
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Сохранено')));
-                },
-                icon: const Icon(Icons.save),
-                label: const Text('Сохранить'),
-              ),
             ),
           ],
         ),
