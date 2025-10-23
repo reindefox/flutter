@@ -27,8 +27,34 @@ class UserProfilePage extends StatelessWidget {
                 CircleAvatar(
                   radius: 28,
                   backgroundColor: Colors.blueGrey.withValues(alpha: 0.2),
-                  backgroundImage: CachedNetworkImageProvider(
-                    user['avatarUrl']!,
+                  child: ClipOval(
+                    child: CachedNetworkImage(
+                      imageUrl: user['avatarUrl']!,
+                      width: 56,
+                      height: 56,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        width: 56,
+                        height: 56,
+                        color: Colors.blueGrey.withValues(alpha: 0.1),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blueGrey),
+                          ),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        width: 56,
+                        height: 56,
+                        color: Colors.blueGrey.withValues(alpha: 0.1),
+                        child: const Icon(
+                          Icons.person,
+                          size: 28,
+                          color: Colors.blueGrey,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),

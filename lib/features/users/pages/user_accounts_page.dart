@@ -100,13 +100,47 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
         leading: CircleAvatar(
           radius: 24,
           backgroundColor: isActive ? Colors.green.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
-          backgroundImage: user.avatarUrl != null ? CachedNetworkImageProvider(user.avatarUrl!) : null,
-          child: user.avatarUrl == null 
-            ? Icon(
-                Icons.person,
-                color: isActive ? Colors.green : Colors.grey,
-              )
-            : null,
+          child: user.avatarUrl != null
+              ? ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: user.avatarUrl!,
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      width: 48,
+                      height: 48,
+                      color: isActive ? Colors.green.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
+                      child: Center(
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              isActive ? Colors.green : Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      width: 48,
+                      height: 48,
+                      color: isActive ? Colors.green.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
+                      child: Icon(
+                        Icons.person,
+                        color: isActive ? Colors.green : Colors.grey,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                )
+              : Icon(
+                  Icons.person,
+                  color: isActive ? Colors.green : Colors.grey,
+                  size: 24,
+                ),
         ),
         title: Text(
           user.name,
