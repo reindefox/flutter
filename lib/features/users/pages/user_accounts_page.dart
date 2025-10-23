@@ -1,6 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:project/shared/state/user_state.dart';
 import '../models/user_models.dart';
 
 class UserAccountsPage extends StatefulWidget {
@@ -34,7 +33,7 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
       id: '3',
       name: 'Денис Потёмкин',
       email: 'example@example.com',
-      role: UserRole.user,
+      role: UserRole.operator,
       status: UserStatus.inactive,
       lastLogin: '2025-10-21 18:00',
       avatarUrl: 'https://www.citypng.com/public/uploads/preview/funny-ginger-memes-cat-transparent-png-735811696684715rzr8agw7dy.png'
@@ -52,7 +51,7 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
       id: '5',
       name: 'Мистер Бин',
       email: 'example@example.com',
-      role: UserRole.operator,
+      role: UserRole.user,
       status: UserStatus.active,
       lastLogin: '2025-10-20 18:00',
       avatarUrl: 'https://media.tenor.com/Zgh_7dE978kAAAAM/mr-bean.gif'
@@ -101,7 +100,7 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
         leading: CircleAvatar(
           radius: 24,
           backgroundColor: isActive ? Colors.green.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
-          backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
+          backgroundImage: user.avatarUrl != null ? CachedNetworkImageProvider(user.avatarUrl!) : null,
           child: user.avatarUrl == null 
             ? Icon(
                 Icons.person,
