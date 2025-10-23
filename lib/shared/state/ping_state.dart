@@ -12,7 +12,7 @@ class PingState extends ChangeNotifier {
     final int index = pings.length - 1;
     Future.delayed(const Duration(seconds: 1), () {
       if (index < pings.length) {
-        pings[index]['ping'] = DateTime.now().millisecond % 100 + 1; // deterministic-ish without Random
+        pings[index]['ping'] = DateTime.now().millisecond % 100 + 1;
         notifyListeners();
       }
     });

@@ -4,15 +4,16 @@ class UserState extends ChangeNotifier {
   Map<String, String> currentUser = {
     'name': 'Лев Герасимов',
     'email': 'reindefox@example.com',
+    'avatarUrl': 'https://churchillpolarbears.org/app/uploads/2020/01/GWB-Silver-Fox.jpg'
   };
 
-  void updateUser({String? name, String? email}) {
-    final updated = Map<String, String>.from(currentUser);
-    if (name != null) updated['name'] = name;
-    if (email != null) updated['email'] = email;
-    currentUser = updated;
-    notifyListeners();
-  }
+  // void updateUser({String? name, String? email}) {
+  //   final updated = Map<String, String>.from(currentUser);
+  //   if (name != null) updated['name'] = name;
+  //   if (email != null) updated['email'] = email;
+  //   currentUser = updated;
+  //   notifyListeners();
+  // }
 }
 
 class UserStateProvider extends InheritedNotifier<UserState> {

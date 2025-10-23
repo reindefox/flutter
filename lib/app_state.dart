@@ -4,7 +4,6 @@ import 'package:flutter/widgets.dart';
 class AppState extends ChangeNotifier {
   final Random _random = Random();
 
-  // Current authorized user
   Map<String, String> currentUser = {
     'name': 'Лев Герасимов',
     'email': 'reindefox@example.com',
@@ -36,7 +35,6 @@ class AppState extends ChangeNotifier {
     'Сервис D',
   ];
 
-  // Pings
   void sendPing() {
     final String time = DateTime.now().toLocal().toIso8601String().substring(11, 19);
     pings.add({'time': time, 'ping': null});
@@ -61,7 +59,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Containers
   void addAvailableContainer(String name) {
     if (name.trim().isEmpty) return;
     if (availableContainers.contains(name)) return;
@@ -108,7 +105,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Services
   void addAvailableService(String name) {
     if (name.trim().isEmpty) return;
     if (availableServices.contains(name)) return;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project/shared/state/user_state.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class UserProfilePage extends StatelessWidget {
   const UserProfilePage({super.key});
@@ -9,9 +10,6 @@ class UserProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<UserState>();
     final user = state.currentUser;
-
-    final TextEditingController nameController = TextEditingController(text: user['name'] ?? '');
-    final TextEditingController emailController = TextEditingController(text: user['email'] ?? '');
 
     return Scaffold(
       appBar: AppBar(
@@ -28,8 +26,10 @@ class UserProfilePage extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: Colors.blueGrey.withOpacity(0.2),
-                  child: const Icon(Icons.person, size: 32, color: Colors.blueGrey),
+                  backgroundColor: Colors.blueGrey.withValues(alpha: 0.2),
+                  backgroundImage: CachedNetworkImageProvider(
+                    user['avatarUrl']!,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

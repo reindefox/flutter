@@ -3,6 +3,7 @@ import './docker_container_manager_page.dart';
 import './service_manager_page.dart';
 import './ping_tracker_page.dart';
 import './metrics_page.dart';
+import '../../users/pages/user_accounts_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -69,6 +70,13 @@ class DashboardGrid extends StatelessWidget {
                 Colors.purple,
                 const MetricsPage(),
               ),
+              _buildDashboardCard(
+                context,
+                'Учётные записи',
+                Icons.people,
+                Colors.indigo,
+                const UserAccountsPage(),
+              ),
             ],
           );
         },
@@ -109,10 +117,7 @@ Widget _buildDashboardCard(
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ],
         ),
