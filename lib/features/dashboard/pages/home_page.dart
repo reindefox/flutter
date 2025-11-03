@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import './docker_container_manager_page.dart';
-import './service_manager_page.dart';
-import './ping_tracker_page.dart';
-import './metrics_page.dart';
-import '../../users/pages/user_accounts_page.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -47,35 +43,42 @@ class DashboardGrid extends StatelessWidget {
                 'Пинги',
                 Icons.network_ping,
                 Colors.green,
-                const WidgetColumnPage(),
+                'ping',
               ),
               _buildDashboardCard(
                 context,
                 'Контейнеры',
                 Icons.dns,
                 Colors.blue,
-                const ListViewPage(),
+                'containers',
               ),
               _buildDashboardCard(
                 context,
                 'Сервисы',
                 Icons.settings,
                 Colors.orange,
-                const ListViewSeparatedPage(),
+                'services',
               ),
               _buildDashboardCard(
                 context,
                 'Мониторинг метрик',
                 Icons.monitor_heart,
                 Colors.purple,
-                const MetricsPage(),
+                'metrics',
               ),
               _buildDashboardCard(
                 context,
                 'Учётные записи',
                 Icons.people,
                 Colors.indigo,
-                const UserAccountsPage(),
+                'accounts',
+              ),
+              _buildDashboardCardWithDialog(
+                context,
+                'Мастер обновления',
+                Icons.system_update,
+                Colors.deepPurple,
+                'updateWizard',
               ),
             ],
           );
@@ -90,14 +93,68 @@ Widget _buildDashboardCard(
   String title,
   IconData icon,
   Color color,
-  Widget destination,
+  String routeName,
 ) {
   return InkWell(
     borderRadius: BorderRadius.circular(12),
     onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => destination),
+      context.pushNamed(routeName);
+    },
+    child: Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: color.withValues(alpha: 0.12),
+              child: Icon(icon, size: 22, color: color),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildDashboardCardWithDialog(
+  BuildContext context,
+  String title,
+  IconData icon,
+  Color color,
+  String routeName,
+) {
+  return InkWell(
+    borderRadius: BorderRadius.circular(12),
+    onTap: () {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Мастер обновления'),
+          content: const Text('Вы уверены, что хотите запустить мастер обновления?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Отмена'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.pushReplacementNamed(routeName);
+              },
+              child: const Text('Да, запустить'),
+            ),
+          ],
+        ),
       );
     },
     child: Card(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:project/app/root_shell.dart';
+import 'package:project/app/routes.dart';
 import 'package:project/shared/state/user_state.dart';
 import 'package:project/shared/state/ping_state.dart';
 import 'package:project/shared/state/container_state.dart';
@@ -22,13 +22,13 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ContainerState()),
         ChangeNotifierProvider(create: (_) => ServiceState()),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'Application',
         theme: ThemeData(
           useMaterial3: true,
           scaffoldBackgroundColor: Colors.white,
         ),
-        home: const RootShell(),
+        routerConfig: appRouter,
       ),
     );
   }

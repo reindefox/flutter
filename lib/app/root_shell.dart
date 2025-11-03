@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:project/features/dashboard/pages/home_page.dart';
 import 'package:project/features/profile/pages/user_profile_page.dart';
 import 'package:project/features/logs/pages/logs_page.dart';
+import 'package:project/features/dashboard/pages/metrics_page.dart';
+import 'package:project/features/users/pages/user_accounts_page.dart';
 
 class RootShell extends StatefulWidget {
-  const RootShell({super.key});
+  final Widget child;
+  const RootShell({super.key, required this.child});
 
   @override
   State<RootShell> createState() => _RootShellState();
@@ -13,43 +17,33 @@ class RootShell extends StatefulWidget {
 class _RootShellState extends State<RootShell> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    _DashboardTab(),
-    LogsPage(),
-    UserProfilePage(),
-  ];
+  final List<String> _routes = ['/home', '/logs', '/profile'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: widget.child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: (i) => setState(() => _currentIndex = i),
+        onDestinationSelected: (i) {
+          setState(() => _currentIndex = i);
+          context.go(_routes[i]);
+        },
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Панель'),
-          NavigationDestination(icon: Icon(Icons.list_alt_outlined), selectedIcon: Icon(Icons.list_alt), label: 'Логи'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Профиль'),
+          NavigationDestination(
+              icon: Icon(Icons.dashboard_outlined),
+              selectedIcon: Icon(Icons.dashboard),
+              label: 'Панель'),
+          NavigationDestination(
+              icon: Icon(Icons.list_alt_outlined),
+              selectedIcon: Icon(Icons.list_alt),
+              label: 'Логи'),
+          NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person),
+              label: 'Профиль'),
         ],
       ),
     );
   }
 }
-
-class _DashboardTab extends StatelessWidget {
-  const _DashboardTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.orange,
-        title: const Text('Dashboard'),
-        centerTitle: true,
-      ),
-      body: const DashboardGrid(),
-    );
-  }
-}
-
-

@@ -19,6 +19,12 @@ class ContentPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: color.withValues(alpha: 0.8),
         title: Text(title),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: body,
     );
