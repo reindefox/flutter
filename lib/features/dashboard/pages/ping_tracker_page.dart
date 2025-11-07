@@ -1,15 +1,38 @@
 import 'package:flutter/material.dart';
 import '../../../shared/widgets/content_page.dart';
 import 'package:project/shared/state/ping_state.dart';
-import 'package:provider/provider.dart';
+import 'package:project/shared/di/service_locator.dart';
 
-class WidgetColumnPage extends StatelessWidget {
+class WidgetColumnPage extends StatefulWidget {
   const WidgetColumnPage({super.key});
 
   @override
+  State<WidgetColumnPage> createState() => _WidgetColumnPageState();
+}
+
+class _WidgetColumnPageState extends State<WidgetColumnPage> {
+  late final PingState _pingState;
+
+  @override
+  void initState() {
+    super.initState();
+    _pingState = getIt<PingState>();
+    _pingState.addListener(_onStateChanged);
+  }
+
+  @override
+  void dispose() {
+    _pingState.removeListener(_onStateChanged);
+    super.dispose();
+  }
+
+  void _onStateChanged() {
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final state = context.watch<PingState>();
-    final pings = state.pings;
+    final pings = _pingState.pings;
 
     return ContentPage(
       title: 'Пинги',
@@ -21,12 +44,12 @@ class WidgetColumnPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                onPressed: state.sendPing,
+                onPressed: _pingState.sendPing,
                 child: const Text('Отправить пинг'),
               ),
               const SizedBox(width: 10),
               ElevatedButton(
-                onPressed: state.clearPings,
+                onPressed: _pingState.clearPings,
                 child: const Text('Очистить'),
               ),
             ],
@@ -58,7 +81,7 @@ class WidgetColumnPage extends StatelessWidget {
                           const SizedBox(width: 10),
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => state.removePing(pings[i]['id'] as String),
+                            onPressed: () => _pingState.removePing(pings[i]['id'] as String),
                           ),
                         ],
                       ),

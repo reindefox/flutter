@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:project/app/routes.dart';
 import 'package:project/shared/state/user_state.dart';
-import 'package:project/shared/state/ping_state.dart';
-import 'package:project/shared/state/container_state.dart';
-import 'package:project/shared/state/service_state.dart';
+import 'package:project/shared/di/service_locator.dart';
 
 void main() {
+  setupServiceLocator();
+  
   runApp(const MyApp());
 }
 
@@ -15,13 +14,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => UserState()),
-        ChangeNotifierProvider(create: (_) => PingState()),
-        ChangeNotifierProvider(create: (_) => ContainerState()),
-        ChangeNotifierProvider(create: (_) => ServiceState()),
-      ],
+    return UserStateProvider(
+      userState: UserState(),
       child: MaterialApp.router(
         title: 'Application',
         theme: ThemeData(
@@ -33,3 +27,5 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+

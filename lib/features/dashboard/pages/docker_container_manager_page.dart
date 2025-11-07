@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../shared/widgets/content_page.dart';
 import 'package:project/shared/state/container_state.dart';
-import 'package:provider/provider.dart';
+import 'package:project/shared/di/service_locator.dart';
 
 class ListViewPage extends StatefulWidget {
   const ListViewPage({super.key});
@@ -12,6 +12,25 @@ class ListViewPage extends StatefulWidget {
 
 class _ListViewPageState extends State<ListViewPage> {
   final TextEditingController _controller = TextEditingController();
+  late final ContainerState _containerState;
+
+  @override
+  void initState() {
+    super.initState();
+    _containerState = getIt<ContainerState>();
+    _containerState.addListener(_onStateChanged);
+  }
+
+  @override
+  void dispose() {
+    _containerState.removeListener(_onStateChanged);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onStateChanged() {
+    setState(() {});
+  }
 
   Color _statusColor(bool running) {
     return running ? Colors.green : Colors.grey;
@@ -19,7 +38,6 @@ class _ListViewPageState extends State<ListViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<ContainerState>();
     return ContentPage(
       title: 'Docker контейнеры',
       color: Colors.blue,
@@ -41,7 +59,7 @@ class _ListViewPageState extends State<ListViewPage> {
                 const SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: () {
-                    state.addAvailableContainer(_controller.text.trim());
+                    _containerState.addAvailableContainer(_controller.text.trim());
                     _controller.clear();
                   },
                   child: const Text('Добавить'),
@@ -56,16 +74,18 @@ class _ListViewPageState extends State<ListViewPage> {
                   return isWide
                       ? Row(
                           children: [
-                            Expanded(child: _buildAvailableContainersCard(state)),
+                            Expanded(
+                              child: _buildAvailableContainersCard(_containerState),
+                            ),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildManagedContainersCard(state)),
+                            Expanded(child: _buildManagedContainersCard(_containerState)),
                           ],
                         )
                       : Column(
                           children: [
-                            _buildAvailableContainersCard(state),
+                            _buildAvailableContainersCard(_containerState),
                             const SizedBox(height: 12),
-                            Expanded(child: _buildManagedContainersCard(state)),
+                            Expanded(child: _buildManagedContainersCard(_containerState)),
                           ],
                         );
                 },
@@ -96,15 +116,27 @@ class _ListViewPageState extends State<ListViewPage> {
                 itemCount: state.availableContainers.length,
                 itemBuilder: (context, index) {
                   final name = state.availableContainers[index];
-                  final alreadyManaged = state.containers.any((c) => c['name'] == name);
+                  final alreadyManaged = state.containers.any(
+                    (c) => c['name'] == name,
+                  );
                   return ListTile(
                     dense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
                     title: Text(name),
                     trailing: ElevatedButton(
-                      onPressed: alreadyManaged ? null : () => state.addContainerFromAvailable(name),
+                      onPressed: alreadyManaged
+                          ? null
+                          : () => state.addContainerFromAvailable(name),
                       child: const Text('Добавить'),
-                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -127,7 +159,10 @@ class _ListViewPageState extends State<ListViewPage> {
           children: [
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              child: Text('Управление контейнерами:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              child: Text(
+                'Управление контейнерами:',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
             const Divider(height: 4),
             Expanded(
@@ -139,10 +174,23 @@ class _ListViewPageState extends State<ListViewPage> {
                   final bool running = container['running'] as bool;
                   return ListTile(
                     dense: true,
-                    title: Text(container['name'], style: const TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text(container['log'], maxLines: 1, overflow: TextOverflow.ellipsis),
+                    title: Text(
+                      container['name'],
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(
+                      container['log'],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     leading: Chip(
-                      label: Text(running ? 'Запущен' : 'Остановлен', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                      label: Text(
+                        running ? 'Запущен' : 'Остановлен',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
                       backgroundColor: _statusColor(running),
                       visualDensity: VisualDensity.compact,
                     ),
@@ -150,14 +198,28 @@ class _ListViewPageState extends State<ListViewPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: Icon(running ? Icons.stop_circle : Icons.play_circle_fill, color: running ? Colors.red : Colors.green, size: 22),
+                          icon: Icon(
+                            running
+                                ? Icons.stop_circle
+                                : Icons.play_circle_fill,
+                            color: running ? Colors.red : Colors.green,
+                            size: 22,
+                          ),
                           tooltip: running ? 'Остановить' : 'Запустить',
-                          onPressed: () => running ? state.stopContainer(index) : state.startContainer(index),
+                          onPressed: () => running
+                              ? state.stopContainer(index)
+                              : state.startContainer(index),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.grey, size: 20),
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.grey,
+                            size: 20,
+                          ),
                           tooltip: 'Удалить',
-                          onPressed: () => state.removeContainer(container['name'] as String),
+                          onPressed: () => state.removeContainer(
+                            container['name'] as String,
+                          ),
                         ),
                       ],
                     ),

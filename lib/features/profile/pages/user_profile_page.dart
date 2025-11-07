@@ -1,14 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:project/shared/state/user_state.dart';
-import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-class UserProfilePage extends StatelessWidget {
+class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
 
   @override
+  State<UserProfilePage> createState() => _UserProfilePageState();
+}
+
+class _UserProfilePageState extends State<UserProfilePage> {
+  UserState? _userState;
+  final TextEditingController _nameController = TextEditingController();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_userState == null) {
+      _userState = UserStateProvider.of(context);
+      _userState!.addListener(_onUserStateChanged);
+      _nameController.text = _userState!.currentUser['name'] ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _userState?.removeListener(_onUserStateChanged);
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _onUserStateChanged() {
+    if (mounted) {
+      setState(() {
+        _nameController.text = _userState!.currentUser['name'] ?? '';
+      });
+    }
+  }
+
+  void _saveName() {
+    if (_nameController.text.trim().isNotEmpty) {
+      _userState?.updateUser(name: _nameController.text.trim());
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final state = context.watch<UserState>();
+    final state = UserStateProvider.of(context);
     final user = state.currentUser;
 
     return Scaffold(
@@ -69,6 +107,29 @@ class UserProfilePage extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Имя',
+                hintText: 'Введите имя',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _saveName,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.blueGrey,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Сохранить'),
+              ),
             ),
           ],
         ),

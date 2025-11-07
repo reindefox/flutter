@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../shared/widgets/content_page.dart';
 import 'package:project/shared/state/service_state.dart';
-import 'package:provider/provider.dart';
+import 'package:project/shared/di/service_locator.dart';
 
 class ServicesPage extends StatefulWidget {
   const ServicesPage({super.key});
@@ -16,6 +16,25 @@ class ListViewSeparatedPage extends ServicesPage {
 
 class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
   final TextEditingController _controller = TextEditingController();
+  late final ServiceState _serviceState;
+
+  @override
+  void initState() {
+    super.initState();
+    _serviceState = getIt<ServiceState>();
+    _serviceState.addListener(_onStateChanged);
+  }
+
+  @override
+  void dispose() {
+    _serviceState.removeListener(_onStateChanged);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onStateChanged() {
+    setState(() {});
+  }
 
   Color _statusColor(String status) {
     switch (status) {
@@ -31,7 +50,6 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<ServiceState>();
     return ContentPage(
       title: 'Сервисы',
       color: Colors.orange,
@@ -53,7 +71,7 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
                 const SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: () {
-                    state.addAvailableService(_controller.text.trim());
+                    _serviceState.addAvailableService(_controller.text.trim());
                     _controller.clear();
                   },
                   child: const Text('Добавить'),
@@ -68,16 +86,16 @@ class _ListViewSeparatedPageState extends State<ListViewSeparatedPage> {
                   return isWide
                       ? Row(
                           children: [
-                            Expanded(child: _buildAvailableServicesCard(state)),
+                            Expanded(child: _buildAvailableServicesCard(_serviceState)),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildManagedServicesCard(state)),
+                            Expanded(child: _buildManagedServicesCard(_serviceState)),
                           ],
                         )
                       : Column(
                           children: [
-                            _buildAvailableServicesCard(state),
+                            _buildAvailableServicesCard(_serviceState),
                             const SizedBox(height: 12),
-                            Expanded(child: _buildManagedServicesCard(state)),
+                            Expanded(child: _buildManagedServicesCard(_serviceState)),
                           ],
                         );
                 },
