@@ -1,42 +1,40 @@
-import 'package:flutter/widgets.dart';
+import 'package:mobx/mobx.dart';
 
-class PingState extends ChangeNotifier {
-  final List<Map<String, dynamic>> pings = [];
+part 'ping_state.g.dart';
 
+class PingState = _PingState with _$PingState;
+
+abstract class _PingState with Store {
+  @observable
+  ObservableList<Map<String, dynamic>> pings = ObservableList<Map<String, dynamic>>();
+
+  @action
   void sendPing() {
     final String id = DateTime.now().microsecondsSinceEpoch.toString();
     final String time = DateTime.now().toLocal().toIso8601String().substring(11, 19);
     pings.add({'id': id, 'time': time, 'ping': null});
-    notifyListeners();
 
     final int index = pings.length - 1;
     Future.delayed(const Duration(seconds: 1), () {
-      if (index < pings.length) {
-        pings[index]['ping'] = DateTime.now().millisecond % 100 + 1;
-        notifyListeners();
-      }
+      runInAction(() {
+        if (index < pings.length && pings[index]['id'] == id) {
+          pings[index] = {
+            'id': id,
+            'time': time,
+            'ping': DateTime.now().millisecond % 100 + 1,
+          };
+        }
+      });
     });
   }
 
+  @action
   void clearPings() {
     pings.clear();
-    notifyListeners();
   }
 
+  @action
   void removePing(String id) {
     pings.removeWhere((ping) => ping['id'] == id);
-    notifyListeners();
   }
 }
-
-class PingStateProvider extends InheritedNotifier<PingState> {
-  const PingStateProvider({super.key, required super.notifier, required super.child});
-
-  static PingState of(BuildContext context) {
-    final provider = context.dependOnInheritedWidgetOfExactType<PingStateProvider>();
-    assert(provider != null, 'PingStateProvider not found in widget tree');
-    return provider!.notifier!;
-  }
-}
-
-

@@ -1,7 +1,8 @@
-import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import '../../../shared/widgets/content_page.dart';
+import 'package:project/shared/state/metrics_state.dart';
+import 'package:project/shared/di/service_locator.dart';
 
 class MetricsPage extends StatefulWidget {
   const MetricsPage({super.key});
@@ -11,32 +12,19 @@ class MetricsPage extends StatefulWidget {
 }
 
 class _MetricsPageState extends State<MetricsPage> {
-  final Random _random = Random();
-  late Timer _timer;
-
-  double _cpuUsage = 0;
-  double _memoryUsage = 0;
-  double _diskUsage = 0;
+  late final MetricsState _metricsState;
 
   @override
   void initState() {
     super.initState();
-    _updateMetrics();
-    _timer = Timer.periodic(const Duration(seconds: 2), (_) => _updateMetrics());
+    _metricsState = getIt<MetricsState>();
+    _metricsState.startMonitoring();
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    _metricsState.dispose();
     super.dispose();
-  }
-
-  void _updateMetrics() {
-    setState(() {
-      _cpuUsage = _random.nextDouble() * 100;
-      _memoryUsage = _random.nextDouble() * 100;
-      _diskUsage = _random.nextDouble() * 100;
-    });
   }
 
   @override
@@ -44,14 +32,16 @@ class _MetricsPageState extends State<MetricsPage> {
     return ContentPage(
       title: 'Мониторинг метрик',
       color: Colors.purple,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: Column(
-          children: [
-            _buildMetricTile('Загрузка процессора', _cpuUsage, Colors.red),
-            _buildMetricTile('Использование памяти', _memoryUsage, Colors.blue),
-            _buildMetricTile('Использование диска', _diskUsage, Colors.green),
-          ],
+      body: Observer(
+        builder: (_) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Column(
+            children: [
+              _buildMetricTile('Загрузка процессора', _metricsState.cpuUsage, Colors.red),
+              _buildMetricTile('Использование памяти', _metricsState.memoryUsage, Colors.blue),
+              _buildMetricTile('Использование диска', _metricsState.diskUsage, Colors.green),
+            ],
+          ),
         ),
       ),
     );

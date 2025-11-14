@@ -1,64 +1,86 @@
-import 'package:flutter/widgets.dart';
+import 'package:mobx/mobx.dart';
 
-class ContainerState extends ChangeNotifier {
-  final List<Map<String, dynamic>> containers = [];
-  final List<String> availableContainers = ['nginx', 'redis', 'postgres', 'prometheus'];
+part 'container_state.g.dart';
 
+class ContainerState = _ContainerState with _$ContainerState;
+
+abstract class _ContainerState with Store {
+  @observable
+  ObservableList<Map<String, dynamic>> containers = ObservableList<Map<String, dynamic>>();
+
+  @observable
+  ObservableList<String> availableContainers = ObservableList<String>.of([
+    'nginx',
+    'redis',
+    'postgres',
+    'prometheus',
+  ]);
+
+  @action
   void addAvailableContainer(String name) {
     if (name.trim().isEmpty) return;
     if (availableContainers.contains(name)) return;
     availableContainers.add(name);
-    notifyListeners();
   }
 
+  @action
   void addContainerFromAvailable(String name) {
     if (containers.any((c) => c['name'] == name)) return;
-    containers.add({'name': name, 'running': false, 'log': 'Контейнер добавлен из доступных'});
-    notifyListeners();
+    containers.add({
+      'name': name,
+      'running': false,
+      'log': 'Контейнер добавлен из доступных',
+    });
   }
 
+  @action
   void startContainer(int index) {
     if (index < 0 || index >= containers.length) return;
     if (containers[index]['running'] == true) return;
-    containers[index]['log'] = 'Запуск контейнера...';
-    notifyListeners();
+    final name = containers[index]['name'];
+    containers[index] = {
+      'name': name,
+      'running': false,
+      'log': 'Запуск контейнера...',
+    };
     Future.delayed(const Duration(seconds: 1), () {
-      if (index < containers.length) {
-        containers[index]['running'] = true;
-        containers[index]['log'] = 'Контейнер запущен ✅';
-        notifyListeners();
-      }
+      runInAction(() {
+        if (index < containers.length && containers[index]['name'] == name) {
+          containers[index] = {
+            'name': name,
+            'running': true,
+            'log': 'Контейнер запущен ✅',
+          };
+        }
+      });
     });
   }
 
+  @action
   void stopContainer(int index) {
     if (index < 0 || index >= containers.length) return;
     if (containers[index]['running'] != true) return;
-    containers[index]['log'] = 'Остановка контейнера...';
-    notifyListeners();
+    final name = containers[index]['name'];
+    containers[index] = {
+      'name': name,
+      'running': false,
+      'log': 'Остановка контейнера...',
+    };
     Future.delayed(const Duration(seconds: 1), () {
-      if (index < containers.length) {
-        containers[index]['running'] = false;
-        containers[index]['log'] = 'Контейнер остановлен ⛔';
-        notifyListeners();
-      }
+      runInAction(() {
+        if (index < containers.length && containers[index]['name'] == name) {
+          containers[index] = {
+            'name': name,
+            'running': false,
+            'log': 'Контейнер остановлен ⛔',
+          };
+        }
+      });
     });
   }
 
+  @action
   void removeContainer(String name) {
     containers.removeWhere((container) => container['name'] == name);
-    notifyListeners();
   }
 }
-
-class ContainerStateProvider extends InheritedNotifier<ContainerState> {
-  const ContainerStateProvider({super.key, required super.notifier, required super.child});
-
-  static ContainerState of(BuildContext context) {
-    final provider = context.dependOnInheritedWidgetOfExactType<ContainerStateProvider>();
-    assert(provider != null, 'ContainerStateProvider not found in widget tree');
-    return provider!.notifier!;
-  }
-}
-
-
