@@ -9,10 +9,35 @@ import 'package:project/features/logs/pages/logs_page.dart';
 import 'package:project/features/profile/pages/user_profile_page.dart';
 import 'package:project/features/users/pages/user_accounts_page.dart';
 import 'package:project/features/dashboard/pages/setup_wizard_page.dart';
+import 'package:project/features/auth/pages/auth_page.dart';
+import 'package:project/core/services/auth_service.dart';
+import 'package:project/shared/di/service_locator.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/home',
+  initialLocation: '/auth',
+  redirect: (context, state) {
+    final authService = getIt<AuthService>();
+    final isAuthenticated = authService.isAuthenticated;
+    final isAuthPage = state.matchedLocation == '/auth';
+
+    // Если не авторизован и не на странице авторизации - перенаправить на авторизацию
+    if (!isAuthenticated && !isAuthPage) {
+      return '/auth';
+    }
+
+    // Если авторизован и на странице авторизации - перенаправить на главную
+    if (isAuthenticated && isAuthPage) {
+      return '/home';
+    }
+
+    return null; // Разрешить навигацию
+  },
   routes: [
+    GoRoute(
+      path: '/auth',
+      name: 'auth',
+      builder: (context, state) => const AuthPage(),
+    ),
     ShellRoute(
       builder: (context, state, child) => RootShell(child: child),
       routes: [

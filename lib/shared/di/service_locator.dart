@@ -27,6 +27,7 @@ import 'package:project/domain/usecases/ping_usecases.dart';
 import 'package:project/domain/usecases/metrics_usecases.dart';
 import 'package:project/domain/usecases/user_usecases.dart';
 import 'package:project/domain/usecases/log_usecases.dart';
+import 'package:project/core/services/auth_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -105,4 +106,6 @@ void setupServiceLocator() {
   getIt.registerFactory(() => GetAllLogsUseCase(getIt<LogRepository>()));
   getIt.registerFactory(() => GetLogsByTypeUseCase(getIt<LogRepository>()));
   getIt.registerFactory(() => AddLogEntryUseCase(getIt<LogRepository>()));
+
+  getIt.registerLazySingleton<AuthService>(() => AuthService());
 }

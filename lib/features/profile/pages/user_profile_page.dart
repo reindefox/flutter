@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/models/user_model.dart';
+import '../../../core/services/auth_service.dart';
 import '../../../domain/usecases/user_usecases.dart';
 import '../../../shared/di/service_locator.dart';
 
@@ -193,6 +195,23 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Сохранить'),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  final authService = getIt<AuthService>();
+                  authService.logout();
+                  context.go('/auth');
+                },
+                icon: const Icon(Icons.logout),
+                label: const Text('Выйти'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  foregroundColor: Colors.red,
+                ),
               ),
             ),
           ],
