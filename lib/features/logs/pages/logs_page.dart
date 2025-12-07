@@ -1,4 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../core/models/log_entry_model.dart';
+import '../../../domain/usecases/log_usecases.dart' show GetAllLogsUseCase;
+import '../../../shared/di/service_locator.dart';
 
 class LogsPage extends StatefulWidget {
   const LogsPage({super.key});
@@ -8,45 +12,45 @@ class LogsPage extends StatefulWidget {
 }
 
 class _LogsPageState extends State<LogsPage> {
-  final List<_LogEntry> _allLogs = <_LogEntry>[
-    _LogEntry(
-      user: 'Лев',
-      action: 'запустил',
-      target: 'контейнер ...',
-      time: DateTime.now().subtract(const Duration(minutes: 5)),
-      type: _LogType.containers,
-    ),
-    _LogEntry(
-      user: 'Лев',
-      action: 'остановил',
-      target: 'контейнер ...',
-      time: DateTime.now().subtract(const Duration(minutes: 22)),
-      type: _LogType.containers,
-    ),
-    _LogEntry(
-      user: 'Лев',
-      action: 'перезапустил',
-      target: 'сервис ...',
-      time: DateTime.now().subtract(const Duration(hours: 2, minutes: 3)),
-      type: _LogType.services,
-    ),
-    _LogEntry(
-      user: 'Лев',
-      action: 'запустил',
-      target: 'пинг сервера',
-      time: DateTime.now().subtract(const Duration(days: 1, hours: 1)),
-      type: _LogType.pings,
-    ),
-  ];
+  late final GetAllLogsUseCase _getAllLogs;
 
-  _LogType _selectedType = _LogType.all;
+  List<LogEntryModel> _allLogs = [];
+  LogType? _selectedType;
+  StreamSubscription? _logsSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _getAllLogs = getIt<GetAllLogsUseCase>();
+
+    _loadLogs();
+    _subscribeToChanges();
+  }
+
+  Future<void> _loadLogs() async {
+    final logs = await _getAllLogs();
+    setState(() => _allLogs = logs);
+  }
+
+  void _subscribeToChanges() {
+    _logsSub = _getAllLogs.watch().listen((logs) {
+      setState(() => _allLogs = logs);
+    });
+  }
+
+  @override
+  void dispose() {
+    _logsSub?.cancel();
+    super.dispose();
+  }
+
+  List<LogEntryModel> get _filteredLogs {
+    if (_selectedType == null) return _allLogs;
+    return _allLogs.where((log) => log.type == _selectedType).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<_LogEntry> visible = _selectedType == _LogType.all
-        ? _allLogs
-        : _allLogs.where((e) => e.type == _selectedType).toList();
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueGrey,
@@ -61,28 +65,21 @@ class _LogsPageState extends State<LogsPage> {
               children: <Widget>[
                 const Text('Тип логов:'),
                 const SizedBox(width: 12),
-                DropdownButton<_LogType>(
+                DropdownButton<LogType?>(
                   value: _selectedType,
-                  items: const <DropdownMenuItem<_LogType>>[
-                    DropdownMenuItem(value: _LogType.all, child: Text('Все')),
-                    DropdownMenuItem(
-                      value: _LogType.containers,
-                      child: Text('Контейнеры'),
-                    ),
-                    DropdownMenuItem(
-                      value: _LogType.services,
-                      child: Text('Сервисы'),
-                    ),
-                    DropdownMenuItem(
-                      value: _LogType.pings,
-                      child: Text('Пинги'),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('Все')),
+                    ...LogType.values.map(
+                      (type) => DropdownMenuItem(
+                        value: type,
+                        child: Text(type.displayName),
+                      ),
                     ),
                   ],
-                  onChanged: (v) =>
-                      setState(() => _selectedType = v ?? _LogType.all),
+                  onChanged: (v) => setState(() => _selectedType = v),
                 ),
                 const Spacer(),
-                Text('${visible.length} записей'),
+                Text('${_filteredLogs.length} записей'),
               ],
             ),
           ),
@@ -90,17 +87,17 @@ class _LogsPageState extends State<LogsPage> {
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: visible.length,
+              itemCount: _filteredLogs.length,
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, index) {
-                final _LogEntry entry = visible[index];
+                final entry = _filteredLogs[index];
                 return ListTile(
                   leading: Icon(
                     _iconForType(entry.type),
                     color: _colorForType(entry.type),
                   ),
-                  title: Text(_formatTitle(entry)),
-                  subtitle: Text(_formatSubtitle(entry.time)),
+                  title: Text(entry.fullActionText),
+                  subtitle: Text(entry.formattedTimestamp),
                 );
               },
             ),
@@ -110,61 +107,29 @@ class _LogsPageState extends State<LogsPage> {
     );
   }
 
-  String _formatTitle(_LogEntry e) {
-    return '${e.user} ${e.action} ${e.target}';
+  IconData _iconForType(LogType type) {
+    switch (type) {
+      case LogType.containers:
+        return Icons.dns;
+      case LogType.services:
+        return Icons.settings;
+      case LogType.pings:
+        return Icons.network_ping;
+      case LogType.system:
+        return Icons.computer;
+    }
   }
 
-  String _formatSubtitle(DateTime time) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    final String day = two(time.day);
-    final String month = two(time.month);
-    final String year = time.year.toString().padLeft(4, '0');
-    final String hour = two(time.hour);
-    final String minute = two(time.minute);
-    return '$day.$month.$year $hour:$minute';
-  }
-}
-
-enum _LogType { all, containers, services, pings }
-
-class _LogEntry {
-  final String user;
-  final String action;
-  final String target;
-  final DateTime time;
-  final _LogType type;
-
-  const _LogEntry({
-    required this.user,
-    required this.action,
-    required this.target,
-    required this.time,
-    required this.type,
-  });
-}
-
-IconData _iconForType(_LogType type) {
-  switch (type) {
-    case _LogType.containers:
-      return Icons.dns;
-    case _LogType.services:
-      return Icons.settings;
-    case _LogType.pings:
-      return Icons.network_ping;
-    case _LogType.all:
-      return Icons.list_alt;
-  }
-}
-
-Color _colorForType(_LogType type) {
-  switch (type) {
-    case _LogType.containers:
-      return Colors.blue;
-    case _LogType.services:
-      return Colors.orange;
-    case _LogType.pings:
-      return Colors.green;
-    case _LogType.all:
-      return Colors.grey;
+  Color _colorForType(LogType type) {
+    switch (type) {
+      case LogType.containers:
+        return Colors.blue;
+      case LogType.services:
+        return Colors.orange;
+      case LogType.pings:
+        return Colors.green;
+      case LogType.system:
+        return Colors.grey;
+    }
   }
 }

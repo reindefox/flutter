@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../models/user_models.dart';
+import '../../../core/models/user_model.dart';
+import '../../../domain/usecases/user_usecases.dart';
+import '../../../shared/di/service_locator.dart';
 
 class UserAccountsPage extends StatefulWidget {
   const UserAccountsPage({super.key});
@@ -10,53 +13,40 @@ class UserAccountsPage extends StatefulWidget {
 }
 
 class _UserAccountsPageState extends State<UserAccountsPage> {
-  final List<User> _users = [
-    const User(
-      id: '1',
-      name: 'Лев Герасимов',
-      email: 'reindefox@example.com',
-      role: UserRole.admin,
-      status: UserStatus.active,
-      lastLogin: '2025-10-23 18:00',
-      avatarUrl: 'https://churchillpolarbears.org/app/uploads/2020/01/GWB-Silver-Fox.jpg',
-    ),
-    const User(
-      id: '2',
-      name: 'Михаил Черепов',
-      email: 'example@example.com',
-      role: UserRole.operator,
-      status: UserStatus.active,
-      lastLogin: '2025-10-22 18:00',
-      avatarUrl: 'https://pbs.twimg.com/media/GMw5Rz7XwAA34KI.jpg'
-    ),
-    const User(
-      id: '3',
-      name: 'Денис Потёмкин',
-      email: 'example@example.com',
-      role: UserRole.operator,
-      status: UserStatus.inactive,
-      lastLogin: '2025-10-21 18:00',
-      avatarUrl: 'https://www.citypng.com/public/uploads/preview/funny-ginger-memes-cat-transparent-png-735811696684715rzr8agw7dy.png'
-    ),
-    const User(
-      id: '4',
-      name: 'Эмиль Керимов',
-      email: 'example@example.com',
-      role: UserRole.operator,
-      status: UserStatus.active,
-      lastLogin: '2025-10-20 18:00',
-      avatarUrl: 'https://ih1.redbubble.net/image.5161777834.1583/bg,f8f8f8-flat,750x,075,f-pad,750x1000,f8f8f8.webp'
-    ),
-    const User(
-      id: '5',
-      name: 'Мистер Бин',
-      email: 'example@example.com',
-      role: UserRole.user,
-      status: UserStatus.active,
-      lastLogin: '2025-10-20 18:00',
-      avatarUrl: 'https://media.tenor.com/Zgh_7dE978kAAAAM/mr-bean.gif'
-    ),
-  ];
+  late final GetAllUsersUseCase _getAllUsers;
+  late final DeleteUserUseCase _deleteUser;
+  late final ToggleUserStatusUseCase _toggleUserStatus;
+
+  List<UserModel> _users = [];
+  StreamSubscription? _usersSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _getAllUsers = getIt<GetAllUsersUseCase>();
+    _deleteUser = getIt<DeleteUserUseCase>();
+    _toggleUserStatus = getIt<ToggleUserStatusUseCase>();
+
+    _loadUsers();
+    _subscribeToChanges();
+  }
+
+  Future<void> _loadUsers() async {
+    final users = await _getAllUsers();
+    setState(() => _users = users);
+  }
+
+  void _subscribeToChanges() {
+    _usersSub = _getAllUsers.watch().listen((users) {
+      setState(() => _users = users);
+    });
+  }
+
+  @override
+  void dispose() {
+    _usersSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,16 +80,16 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
     );
   }
 
-  Widget _buildUserCard(User user) {
-    final isActive = user.status == UserStatus.active;
-    
+  Widget _buildUserCard(UserModel user) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
       child: ListTile(
         leading: CircleAvatar(
           radius: 24,
-          backgroundColor: isActive ? Colors.green.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
+          backgroundColor: user.isActive 
+              ? Colors.green.withValues(alpha: 0.1) 
+              : Colors.grey.withValues(alpha: 0.1),
           child: user.avatarUrl != null
               ? ClipOval(
                   child: CachedNetworkImage(
@@ -110,7 +100,9 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
                     placeholder: (context, url) => Container(
                       width: 48,
                       height: 48,
-                      color: isActive ? Colors.green.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
+                      color: user.isActive 
+                          ? Colors.green.withValues(alpha: 0.1) 
+                          : Colors.grey.withValues(alpha: 0.1),
                       child: Center(
                         child: SizedBox(
                           width: 16,
@@ -118,7 +110,7 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              isActive ? Colors.green : Colors.grey,
+                              user.isActive ? Colors.green : Colors.grey,
                             ),
                           ),
                         ),
@@ -127,10 +119,12 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
                     errorWidget: (context, url, error) => Container(
                       width: 48,
                       height: 48,
-                      color: isActive ? Colors.green.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
+                      color: user.isActive 
+                          ? Colors.green.withValues(alpha: 0.1) 
+                          : Colors.grey.withValues(alpha: 0.1),
                       child: Icon(
                         Icons.person,
-                        color: isActive ? Colors.green : Colors.grey,
+                        color: user.isActive ? Colors.green : Colors.grey,
                         size: 24,
                       ),
                     ),
@@ -138,7 +132,7 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
                 )
               : Icon(
                   Icons.person,
-                  color: isActive ? Colors.green : Colors.grey,
+                  color: user.isActive ? Colors.green : Colors.grey,
                   size: 24,
                 ),
         ),
@@ -156,14 +150,14 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: user.role.color.withValues(alpha: 0.1),
+                    color: _roleColor(user.role).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     user.role.displayName,
                     style: TextStyle(
                       fontSize: 12,
-                      color: user.role.color,
+                      color: _roleColor(user.role),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -172,14 +166,14 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: user.status.color.withValues(alpha: 0.1),
+                    color: _statusColor(user.status).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     user.status.displayName,
                     style: TextStyle(
                       fontSize: 12,
-                      color: user.status.color,
+                      color: _statusColor(user.status),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -188,7 +182,7 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Последний вход: ${user.lastLogin}',
+              'Последний вход: ${user.lastLoginFormatted}',
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
@@ -242,13 +236,33 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
     );
   }
 
-  void _handleUserAction(String action, User user) {
+  Color _roleColor(UserRole role) {
+    switch (role) {
+      case UserRole.admin:
+        return Colors.red;
+      case UserRole.operator:
+        return Colors.blue;
+      case UserRole.user:
+        return Colors.green;
+    }
+  }
+
+  Color _statusColor(UserStatus status) {
+    switch (status) {
+      case UserStatus.active:
+        return Colors.green;
+      case UserStatus.inactive:
+        return Colors.orange;
+    }
+  }
+
+  void _handleUserAction(String action, UserModel user) {
     switch (action) {
       case 'edit':
         _showEditUserDialog(user);
         break;
       case 'toggle_status':
-        _toggleUserStatus(user);
+        _toggleUserStatus(user.id);
         break;
       case 'reset_password':
         _showResetPasswordDialog(user);
@@ -260,17 +274,38 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
   }
 
   void _showAddUserDialog() {
+    // TODO: Реализовать диалог добавления пользователя
   }
 
-  void _showEditUserDialog(User user) {
+  void _showEditUserDialog(UserModel user) {
+    // TODO: Реализовать диалог редактирования пользователя
   }
 
-  void _toggleUserStatus(User user) {
+  void _showResetPasswordDialog(UserModel user) {
+    // TODO: Реализовать диалог сброса пароля
   }
 
-  void _showResetPasswordDialog(User user) {
-  }
-
-  void _showDeleteUserDialog(User user) {
+  void _showDeleteUserDialog(UserModel user) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Удаление пользователя'),
+        content: Text('Вы уверены, что хотите удалить пользователя ${user.name}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _deleteUser(user.id);
+              Navigator.of(context).pop();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Удалить'),
+          ),
+        ],
+      ),
+    );
   }
 }

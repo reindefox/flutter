@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:project/features/dashboard/pages/home_page.dart';
-import 'package:project/features/profile/pages/user_profile_page.dart';
-import 'package:project/features/logs/pages/logs_page.dart';
-import 'package:project/features/dashboard/pages/metrics_page.dart';
-import 'package:project/features/users/pages/user_accounts_page.dart';
 
 class RootShell extends StatefulWidget {
   final Widget child;
