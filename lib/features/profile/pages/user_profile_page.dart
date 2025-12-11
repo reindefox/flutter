@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/settings_service.dart';
 import '../../../domain/usecases/user_usecases.dart';
 import '../../../shared/di/service_locator.dart';
 
@@ -20,6 +21,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   
   late final GetCurrentUserUseCase _getCurrentUser;
   late final UpdateCurrentUserUseCase _updateCurrentUser;
+  late final SettingsService _settingsService;
 
   UserModel? _user;
   StreamSubscription? _userSub;
@@ -29,6 +31,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     super.initState();
     _getCurrentUser = getIt<GetCurrentUserUseCase>();
     _updateCurrentUser = getIt<UpdateCurrentUserUseCase>();
+    _settingsService = getIt<SettingsService>();
 
     _loadUser();
     _subscribeToChanges();
@@ -197,14 +200,38 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: const Text('Сохранить'),
               ),
             ),
+            const SizedBox(height: 24),
+            const Text(
+              'Настройки',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: SwitchListTile(
+                title: const Text('Темная тема'),
+                subtitle: const Text('Переключить режим оформления'),
+                secondary: Icon(
+                  _settingsService.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                ),
+                value: _settingsService.isDarkMode,
+                onChanged: (value) {
+                  _settingsService.setThemeMode(
+                    value ? ThemeMode.dark : ThemeMode.light,
+                  );
+                  setState(() {});
+                },
+              ),
+            ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {
+                onPressed: () async {
                   final authService = getIt<AuthService>();
-                  authService.logout();
-                  context.go('/auth');
+                  await authService.logout();
+                  if (context.mounted) {
+                    context.go('/auth');
+                  }
                 },
                 icon: const Icon(Icons.logout),
                 label: const Text('Выйти'),

@@ -20,17 +20,15 @@ final GoRouter appRouter = GoRouter(
     final isAuthenticated = authService.isAuthenticated;
     final isAuthPage = state.matchedLocation == '/auth';
 
-    // Если не авторизован и не на странице авторизации - перенаправить на авторизацию
     if (!isAuthenticated && !isAuthPage) {
       return '/auth';
     }
 
-    // Если авторизован и на странице авторизации - перенаправить на главную
     if (isAuthenticated && isAuthPage) {
       return '/home';
     }
 
-    return null; // Разрешить навигацию
+    return null;
   },
   routes: [
     GoRoute(

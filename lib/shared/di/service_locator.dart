@@ -28,10 +28,19 @@ import 'package:project/domain/usecases/metrics_usecases.dart';
 import 'package:project/domain/usecases/user_usecases.dart';
 import 'package:project/domain/usecases/log_usecases.dart';
 import 'package:project/core/services/auth_service.dart';
+import 'package:project/core/services/secure_storage_service.dart';
+import 'package:project/core/services/settings_service.dart';
 
 final getIt = GetIt.instance;
 
 void setupServiceLocator() {
+  getIt.registerLazySingleton<SecureStorageService>(
+    () => SecureStorageService(),
+  );
+  getIt.registerLazySingleton<SettingsService>(
+    () => SettingsService(),
+  );
+
   getIt.registerLazySingleton<ContainerLocalDataSource>(
     () => ContainerLocalDataSource(),
   );
@@ -107,5 +116,7 @@ void setupServiceLocator() {
   getIt.registerFactory(() => GetLogsByTypeUseCase(getIt<LogRepository>()));
   getIt.registerFactory(() => AddLogEntryUseCase(getIt<LogRepository>()));
 
-  getIt.registerLazySingleton<AuthService>(() => AuthService());
+  getIt.registerLazySingleton<AuthService>(
+    () => AuthService(getIt<SecureStorageService>()),
+  );
 }
