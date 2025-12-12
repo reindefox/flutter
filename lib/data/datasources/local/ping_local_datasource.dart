@@ -6,11 +6,17 @@ class PingDTO {
   final String id;
   final DateTime timestamp;
   final int? latencyMs;
+  final String? endpoint;
+  final String? api;
+  final String? error;
 
   PingDTO({
     required this.id,
     required this.timestamp,
     this.latencyMs,
+    this.endpoint,
+    this.api,
+    this.error,
   });
 
   PingModel toModel() {
@@ -19,6 +25,9 @@ class PingDTO {
       timestamp: timestamp,
       latencyMs: latencyMs,
       isComplete: latencyMs != null,
+      endpoint: endpoint,
+      api: api,
+      error: error,
     );
   }
 }

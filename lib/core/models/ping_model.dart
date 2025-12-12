@@ -3,12 +3,18 @@ class PingModel {
   final DateTime timestamp;
   final int? latencyMs;
   final bool isComplete;
+  final String? endpoint;
+  final String? api;
+  final String? error;
 
   const PingModel({
     required this.id,
     required this.timestamp,
     this.latencyMs,
     this.isComplete = false,
+    this.endpoint,
+    this.api,
+    this.error,
   });
 
   PingModel copyWith({
@@ -16,12 +22,18 @@ class PingModel {
     DateTime? timestamp,
     int? latencyMs,
     bool? isComplete,
+    String? endpoint,
+    String? api,
+    String? error,
   }) {
     return PingModel(
       id: id ?? this.id,
       timestamp: timestamp ?? this.timestamp,
       latencyMs: latencyMs ?? this.latencyMs,
       isComplete: isComplete ?? this.isComplete,
+      endpoint: endpoint ?? this.endpoint,
+      api: api ?? this.api,
+      error: error ?? this.error,
     );
   }
 
@@ -32,7 +44,14 @@ class PingModel {
     return '$h:$m:$s';
   }
 
-  String get latencyText => latencyMs != null ? '${latencyMs}ms' : '...';
+  String get latencyText {
+    if (error != null) return error!;
+    return latencyMs != null ? '${latencyMs}ms' : '...';
+  }
+
+  bool get hasError => error != null;
+
+  String get displayName => endpoint ?? 'Ping';
 
   @override
   bool operator ==(Object other) =>
@@ -43,5 +62,5 @@ class PingModel {
   int get hashCode => id.hashCode;
 
   @override
-  String toString() => 'PingModel(id: $id, latency: $latencyMs)';
+  String toString() => 'PingModel(id: $id, endpoint: $endpoint, latency: $latencyMs)';
 }

@@ -58,7 +58,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     if (!mounted) return;
 
     if (success) {
-      // Навигация будет обработана через роутер
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -97,7 +97,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     if (!mounted) return;
 
     if (success) {
-      // Навигация будет обработана через роутер
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -137,21 +137,21 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  // const SizedBox(height: 8),
-                  // Text(
-                  //   'Войдите или зарегистрируйтесь',
-                  //   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  //     color: Colors.grey[600],
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 32),
-                  // TabBar(
-                  //   controller: _tabController,
-                  //   tabs: const [
-                  //     Tab(text: 'Вход'),
-                  //     Tab(text: 'Регистрация'),
-                  //   ],
-                  // ),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                   const SizedBox(height: 24),
                   Form(
                     key: _formKey,
@@ -238,11 +238,11 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                 )
               : const Text('Войти'),
         ),
-        // const SizedBox(height: 16),
-        // TextButton(
-        //   onPressed: _switchTab,
-        //   child: const Text('Нет аккаунта? Зарегистрируйтесь'),
-        // ),
+
+
+
+
+
       ],
     );
   }

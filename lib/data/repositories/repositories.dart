@@ -6,3 +6,5 @@ export 'ping_repository_impl.dart';
 export 'metrics_repository_impl.dart';
 export 'user_repository_impl.dart';
 export 'log_repository_impl.dart';
+export 'json_placeholder_repository_impl.dart';
+export 'github_repository_impl.dart';
