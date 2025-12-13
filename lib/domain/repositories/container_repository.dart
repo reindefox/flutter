@@ -1,4 +1,5 @@
 import '../../core/models/container_model.dart';
+import 'api_repository.dart';
 
 abstract class ContainerRepository {
   Future<List<ContainerModel>> getManagedContainers();
@@ -8,6 +9,8 @@ abstract class ContainerRepository {
   Future<void> addAvailableContainer(String name);
 
   Future<ContainerModel> addContainerFromAvailable(String name);
+
+  Future<ContainerModel> addContainerFromGithubRepository(String owner, String repo);
 
   Future<ContainerModel> startContainer(String id);
 

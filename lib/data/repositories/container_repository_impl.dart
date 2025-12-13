@@ -1,11 +1,13 @@
 import '../../core/models/container_model.dart';
 import '../../domain/repositories/container_repository.dart';
+import '../../domain/repositories/api_repository.dart';
 import '../datasources/local/container_local_datasource.dart';
 
 class ContainerRepositoryImpl implements ContainerRepository {
   final ContainerLocalDataSource _localDataSource;
+  final GithubApiRepository _githubRepository;
 
-  ContainerRepositoryImpl(this._localDataSource);
+  ContainerRepositoryImpl(this._localDataSource, this._githubRepository);
 
   @override
   Future<List<ContainerModel>> getManagedContainers() async {
@@ -25,6 +27,12 @@ class ContainerRepositoryImpl implements ContainerRepository {
   @override
   Future<ContainerModel> addContainerFromAvailable(String name) async {
     return _localDataSource.addContainerFromAvailable(name);
+  }
+
+  @override
+  Future<ContainerModel> addContainerFromGithubRepository(String owner, String repo) async {
+    final githubRepo = await _githubRepository.getRepository(owner, repo);
+    return _localDataSource.addContainerFromGithubRepository(githubRepo);
   }
 
   @override

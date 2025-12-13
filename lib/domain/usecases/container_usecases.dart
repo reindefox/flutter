@@ -42,6 +42,14 @@ class AddContainerToManagedUseCase {
   Future<ContainerModel> call(String name) => _repository.addContainerFromAvailable(name);
 }
 
+class AddGithubRepositoryAsContainerUseCase {
+  final ContainerRepository _repository;
+
+  AddGithubRepositoryAsContainerUseCase(this._repository);
+
+  Future<ContainerModel> call(String owner, String repo) => _repository.addContainerFromGithubRepository(owner, repo);
+}
+
 class StartContainerUseCase {
   final ContainerRepository _repository;
 

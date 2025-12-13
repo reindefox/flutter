@@ -1,5 +1,7 @@
 import 'package:project/core/models/api/api_models.dart';
 import 'package:project/domain/repositories/api_repository.dart';
+import 'package:project/data/datasources/remote/infrastructure_datasource.dart'
+    show InfrastructureStatus, InfrastructureService;
 
 
 
@@ -129,5 +131,85 @@ class GetTrendingRepositoriesUseCase {
       language: language,
       perPage: perPage,
     );
+  }
+}
+
+class GetGithubRepositoryBranchesUseCase {
+  final GithubApiRepository _repository;
+
+  GetGithubRepositoryBranchesUseCase(this._repository);
+
+  Future<List<GithubBranch>> call(String owner, String repo) {
+    return _repository.getRepositoryBranches(owner, repo);
+  }
+}
+
+class GetGithubRepositoryCommitsUseCase {
+  final GithubApiRepository _repository;
+
+  GetGithubRepositoryCommitsUseCase(this._repository);
+
+  Future<List<GithubCommit>> call(String owner, String repo, {int perPage = 10}) {
+    return _repository.getRepositoryCommits(owner, repo, perPage: perPage);
+  }
+}
+
+class GetGithubRepositoryIssuesUseCase {
+  final GithubApiRepository _repository;
+
+  GetGithubRepositoryIssuesUseCase(this._repository);
+
+  Future<List<GithubIssue>> call(String owner, String repo, {int perPage = 10, String state = 'open'}) {
+    return _repository.getRepositoryIssues(owner, repo, perPage: perPage, state: state);
+  }
+}
+
+class GetGithubRepositoryContributorsUseCase {
+  final GithubApiRepository _repository;
+
+  GetGithubRepositoryContributorsUseCase(this._repository);
+
+  Future<List<GithubContributor>> call(String owner, String repo, {int perPage = 10}) {
+    return _repository.getRepositoryContributors(owner, repo, perPage: perPage);
+  }
+}
+
+class GetGithubRepositoryLanguagesUseCase {
+  final GithubApiRepository _repository;
+
+  GetGithubRepositoryLanguagesUseCase(this._repository);
+
+  Future<GithubLanguages> call(String owner, String repo) {
+    return _repository.getRepositoryLanguages(owner, repo);
+  }
+}
+
+class GetGithubRepositoryReadmeUseCase {
+  final GithubApiRepository _repository;
+
+  GetGithubRepositoryReadmeUseCase(this._repository);
+
+  Future<GithubReadme> call(String owner, String repo) {
+    return _repository.getRepositoryReadme(owner, repo);
+  }
+}
+
+class GetMainServerStatusUseCase {
+  final InfrastructureRepository _repository;
+
+  GetMainServerStatusUseCase(this._repository);
+
+  Future<InfrastructureStatus> call() {
+    return _repository.getMainServerStatus();
+  }
+}
+
+class GetServicesStatusUseCase {
+  final InfrastructureRepository _repository;
+
+  GetServicesStatusUseCase(this._repository);
+
+  Future<List<InfrastructureService>> call() {
+    return _repository.getServicesStatus();
   }
 }

@@ -118,6 +118,150 @@ class GithubDataSource {
     );
   }
 
+  Future<List<GithubBranch>> getRepositoryBranches(String owner, String repo) async {
+    try {
+      final response = await _dioClient.get<List<dynamic>>(
+        '$_baseUrl/repos/$owner/$repo/branches',
+        options: Options(
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+          },
+        ),
+      );
+      
+      if (response.data == null) {
+        return [];
+      }
+      
+      return response.data!
+          .map((json) => GithubBranch.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<List<GithubCommit>> getRepositoryCommits(String owner, String repo, {int perPage = 10}) async {
+    try {
+      final response = await _dioClient.get<List<dynamic>>(
+        '$_baseUrl/repos/$owner/$repo/commits',
+        queryParameters: {
+          'per_page': perPage,
+        },
+        options: Options(
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+          },
+        ),
+      );
+      
+      if (response.data == null) {
+        return [];
+      }
+      
+      return response.data!
+          .map((json) => GithubCommit.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<List<GithubIssue>> getRepositoryIssues(String owner, String repo, {int perPage = 10, String state = 'open'}) async {
+    try {
+      final response = await _dioClient.get<List<dynamic>>(
+        '$_baseUrl/repos/$owner/$repo/issues',
+        queryParameters: {
+          'state': state,
+          'per_page': perPage,
+        },
+        options: Options(
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+          },
+        ),
+      );
+      
+      if (response.data == null) {
+        return [];
+      }
+      
+      return response.data!
+          .map((json) => GithubIssue.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<List<GithubContributor>> getRepositoryContributors(String owner, String repo, {int perPage = 10}) async {
+    try {
+      final response = await _dioClient.get<List<dynamic>>(
+        '$_baseUrl/repos/$owner/$repo/contributors',
+        queryParameters: {
+          'per_page': perPage,
+        },
+        options: Options(
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+          },
+        ),
+      );
+      
+      if (response.data == null) {
+        return [];
+      }
+      
+      return response.data!
+          .map((json) => GithubContributor.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<GithubLanguages> getRepositoryLanguages(String owner, String repo) async {
+    try {
+      final response = await _dioClient.get<Map<String, dynamic>>(
+        '$_baseUrl/repos/$owner/$repo/languages',
+        options: Options(
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+          },
+        ),
+      );
+      
+      if (response.data == null) {
+        throw Exception('Языки не найдены');
+      }
+      
+      return GithubLanguages.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<GithubReadme> getRepositoryReadme(String owner, String repo) async {
+    try {
+      final response = await _dioClient.get<Map<String, dynamic>>(
+        '$_baseUrl/repos/$owner/$repo/readme',
+        options: Options(
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+          },
+        ),
+      );
+      
+      if (response.data == null) {
+        throw Exception('README не найден');
+      }
+      
+      return GithubReadme.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   Exception _handleError(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:

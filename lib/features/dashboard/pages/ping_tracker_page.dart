@@ -245,8 +245,8 @@ class _WidgetColumnPageState extends State<WidgetColumnPage> {
 
   IconData _getServerIcon(String? api) {
     switch (api) {
-      case 'GitHub':
-        return Icons.cloud;
+      case 'HTTPBin':
+        return Icons.http;
       case 'JSONPlaceholder':
         return Icons.dns;
       default:
@@ -256,8 +256,8 @@ class _WidgetColumnPageState extends State<WidgetColumnPage> {
 
   Color _getServerColor(String? api) {
     switch (api) {
-      case 'GitHub':
-        return Colors.blueGrey.shade700;
+      case 'HTTPBin':
+        return Colors.orange.shade700;
       case 'JSONPlaceholder':
         return Colors.teal.shade700;
       default:
@@ -267,8 +267,8 @@ class _WidgetColumnPageState extends State<WidgetColumnPage> {
 
   String _getServerLabel(String? api) {
     switch (api) {
-      case 'GitHub':
-        return 'Внешний сервер';
+      case 'HTTPBin':
+        return 'Тестовый HTTP сервер';
       case 'JSONPlaceholder':
         return 'Сервер данных';
       default:
