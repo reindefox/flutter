@@ -1,9 +1,12 @@
+import 'api/api_models.dart';
+
 class ContainerModel {
   final String id;
   final String name;
   final bool isRunning;
   final String log;
   final DateTime? startedAt;
+  final GithubRepository? repository;
 
   const ContainerModel({
     required this.id,
@@ -11,6 +14,7 @@ class ContainerModel {
     required this.isRunning,
     required this.log,
     this.startedAt,
+    this.repository,
   });
 
   ContainerModel copyWith({
@@ -19,6 +23,7 @@ class ContainerModel {
     bool? isRunning,
     String? log,
     DateTime? startedAt,
+    GithubRepository? repository,
   }) {
     return ContainerModel(
       id: id ?? this.id,
@@ -26,12 +31,15 @@ class ContainerModel {
       isRunning: isRunning ?? this.isRunning,
       log: log ?? this.log,
       startedAt: startedAt ?? this.startedAt,
+      repository: repository ?? this.repository,
     );
   }
 
   bool get isActive => isRunning;
 
   String get statusText => isRunning ? 'Запущен' : 'Остановлен';
+
+  bool get isGithubRepository => repository != null;
 
   @override
   bool operator ==(Object other) =>
@@ -46,5 +54,5 @@ class ContainerModel {
   int get hashCode => id.hashCode ^ name.hashCode ^ isRunning.hashCode;
 
   @override
-  String toString() => 'ContainerModel(id: $id, name: $name, isRunning: $isRunning)';
+  String toString() => 'ContainerModel(id: $id, name: $name, isRunning: $isRunning, isGithubRepository: $isGithubRepository)';
 }

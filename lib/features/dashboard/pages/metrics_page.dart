@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../shared/widgets/content_page.dart';
 import '../../../core/models/metrics_model.dart';
-import '../../../core/models/api/api_models.dart';
+import '../../../domain/repositories/api_repository.dart' show InfrastructureRepository;
+import '../../../data/datasources/remote/infrastructure_datasource.dart'
+    show InfrastructureStatus, InfrastructureService;
 import '../../../domain/usecases/metrics_usecases.dart';
 import '../../../domain/usecases/api_usecases.dart';
 import '../../../shared/di/service_locator.dart';
@@ -21,14 +23,14 @@ class _MetricsPageState extends State<MetricsPage> {
   late final GetCurrentMetricsUseCase _getCurrentMetrics;
   late final StartMetricsMonitoringUseCase _startMonitoring;
   late final StopMetricsMonitoringUseCase _stopMonitoring;
-  late final GetTrendingRepositoriesUseCase _getServerStats;
-  late final GetGithubRepositoryUseCase _getMainServerInfo;
+  late final GetServicesStatusUseCase _getServicesStatus;
+  late final GetMainServerStatusUseCase _getMainServerStatus;
 
   MetricsModel? _metrics;
   StreamSubscription? _metricsSub;
 
-  GithubSearchResult? _serverStats;
-  GithubRepository? _mainServer;
+  List<InfrastructureService>? _services;
+  InfrastructureStatus? _mainServer;
   bool _isLoadingServerData = false;
   String? _serverError;
 
@@ -38,8 +40,8 @@ class _MetricsPageState extends State<MetricsPage> {
     _getCurrentMetrics = getIt<GetCurrentMetricsUseCase>();
     _startMonitoring = getIt<StartMetricsMonitoringUseCase>();
     _stopMonitoring = getIt<StopMetricsMonitoringUseCase>();
-    _getServerStats = getIt<GetTrendingRepositoriesUseCase>();
-    _getMainServerInfo = getIt<GetGithubRepositoryUseCase>();
+    _getServicesStatus = getIt<GetServicesStatusUseCase>();
+    _getMainServerStatus = getIt<GetMainServerStatusUseCase>();
 
     _startMonitoring();
     _subscribeToChanges();
@@ -59,14 +61,12 @@ class _MetricsPageState extends State<MetricsPage> {
     });
     
     try {
-
-      final mainServer = await _getMainServerInfo('flutter', 'flutter');
-
-      final stats = await _getServerStats(language: 'dart', perPage: 5);
+      final mainServer = await _getMainServerStatus();
+      final services = await _getServicesStatus();
       
       setState(() {
         _mainServer = mainServer;
-        _serverStats = stats;
+        _services = services;
         _isLoadingServerData = false;
       });
     } catch (e) {
@@ -150,9 +150,9 @@ class _MetricsPageState extends State<MetricsPage> {
                   if (_mainServer != null)
                     _buildMainServerCard(_mainServer!),
                   
-                  if (_serverStats != null) ...[
+                  if (_services != null && _services!.isNotEmpty) ...[
                     const SizedBox(height: 12),
-                    _buildServicesStatsSection(_serverStats!),
+                    _buildServicesStatsSection(_services!),
                   ],
 
                   if (!_isLoadingServerData)
@@ -204,7 +204,7 @@ class _MetricsPageState extends State<MetricsPage> {
     );
   }
 
-  Widget _buildMainServerCard(GithubRepository server) {
+  Widget _buildMainServerCard(InfrastructureStatus server) {
     return Card(
       child: Column(
         children: [
@@ -218,12 +218,12 @@ class _MetricsPageState extends State<MetricsPage> {
               ),
               child: const Icon(Icons.computer, color: Colors.purple),
             ),
-            title: const Text(
-              'Главный сервер',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            title: Text(
+              server.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            subtitle: Text(
-              server.description ?? 'Основной сервер инфраструктуры',
+            subtitle: const Text(
+              'Основной сервер инфраструктуры',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -234,10 +234,10 @@ class _MetricsPageState extends State<MetricsPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatItem(Icons.people, server.formattedStars, 'Подключений', Colors.amber),
-                _buildStatItem(Icons.sync, '${server.forksCount}', 'Синхронизаций', Colors.blue),
-                _buildStatItem(Icons.warning_amber, '${server.openIssuesCount}', 'Инцидентов', Colors.red),
-                _buildStatItem(Icons.memory, server.language ?? 'N/A', 'Платформа', Colors.purple),
+                _buildStatItem(Icons.people, '${server.connections}', 'Подключений', Colors.amber),
+                _buildStatItem(Icons.sync, '${server.synchronizations}', 'Синхронизаций', Colors.blue),
+                _buildStatItem(Icons.warning_amber, '${server.incidents}', 'Инцидентов', Colors.red),
+                _buildStatItem(Icons.memory, server.platform, 'Платформа', Colors.purple),
               ],
             ),
           ),
@@ -263,7 +263,8 @@ class _MetricsPageState extends State<MetricsPage> {
     );
   }
 
-  Widget _buildServicesStatsSection(GithubSearchResult result) {
+  Widget _buildServicesStatsSection(List<InfrastructureService> services) {
+    final activeCount = services.where((s) => s.isActive).length;
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,7 +287,7 @@ class _MetricsPageState extends State<MetricsPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '${result.items.length} активных',
+                    '$activeCount активных',
                     style: TextStyle(fontSize: 11, color: Colors.green.shade700),
                   ),
                 ),
@@ -294,7 +295,7 @@ class _MetricsPageState extends State<MetricsPage> {
             ),
           ),
           const Divider(height: 1),
-          ...result.items.map((service) => ListTile(
+          ...services.map((service) => ListTile(
             dense: true,
             leading: Container(
               width: 28,
@@ -315,14 +316,14 @@ class _MetricsPageState extends State<MetricsPage> {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(
-                    color: Colors.green,
+                  decoration: BoxDecoration(
+                    color: service.isActive ? Colors.green : Colors.grey,
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '${service.stargazersCount} req/s',
+                  '',
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
               ],

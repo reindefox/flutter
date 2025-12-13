@@ -25,24 +25,24 @@ class PingRemoteDataSource {
 
   static const List<PingEndpoint> availableEndpoints = [
     PingEndpoint(
-      name: 'Сервер пользователей',
+      name: 'HTTPBin Status',
+      url: 'https://httpbin.org/status/200',
+      serverType: 'HTTPBin',
+    ),
+    PingEndpoint(
+      name: 'HTTPBin Get',
+      url: 'https://httpbin.org/get',
+      serverType: 'HTTPBin',
+    ),
+    PingEndpoint(
+      name: 'JSONPlaceholder Users',
       url: 'https://jsonplaceholder.typicode.com/users/1',
       serverType: 'JSONPlaceholder',
     ),
     PingEndpoint(
-      name: 'Сервер контента',
+      name: 'JSONPlaceholder Posts',
       url: 'https://jsonplaceholder.typicode.com/posts/1',
       serverType: 'JSONPlaceholder',
-    ),
-    PingEndpoint(
-      name: 'Внешний сервис',
-      url: 'https://api.github.com',
-      serverType: 'GitHub',
-    ),
-    PingEndpoint(
-      name: 'Сервер репозиториев',
-      url: 'https://api.github.com/repos/flutter/flutter',
-      serverType: 'GitHub',
     ),
   ];
 

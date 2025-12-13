@@ -26,6 +26,8 @@ import 'package:project/data/repositories/user_repository_impl.dart';
 import 'package:project/data/repositories/log_repository_impl.dart';
 import 'package:project/data/repositories/json_placeholder_repository_impl.dart';
 import 'package:project/data/repositories/github_repository_impl.dart';
+import 'package:project/data/repositories/infrastructure_repository_impl.dart';
+import 'package:project/data/datasources/remote/infrastructure_datasource.dart';
 
 import 'package:project/domain/usecases/container_usecases.dart';
 import 'package:project/domain/usecases/service_usecases.dart';
@@ -89,7 +91,7 @@ void setupServiceLocator() {
 
 
   getIt.registerLazySingleton<ContainerRepository>(
-    () => ContainerRepositoryImpl(getIt<ContainerLocalDataSource>()),
+    () => ContainerRepositoryImpl(getIt<ContainerLocalDataSource>(), getIt<GithubApiRepository>()),
   );
   getIt.registerLazySingleton<ServiceRepository>(
     () => ServiceRepositoryImpl(getIt<ServiceLocalDataSource>()),
@@ -115,11 +117,18 @@ void setupServiceLocator() {
   getIt.registerLazySingleton<GithubApiRepository>(
     () => GithubApiRepositoryImpl(getIt<GithubDataSource>()),
   );
+  getIt.registerLazySingleton<InfrastructureDataSource>(
+    () => InfrastructureDataSource(getIt<DioClient>()),
+  );
+  getIt.registerLazySingleton<InfrastructureRepository>(
+    () => InfrastructureRepositoryImpl(getIt<InfrastructureDataSource>()),
+  );
 
   getIt.registerFactory(() => GetContainersUseCase(getIt<ContainerRepository>()));
   getIt.registerFactory(() => GetAvailableContainersUseCase(getIt<ContainerRepository>()));
   getIt.registerFactory(() => AddAvailableContainerUseCase(getIt<ContainerRepository>()));
   getIt.registerFactory(() => AddContainerToManagedUseCase(getIt<ContainerRepository>()));
+  getIt.registerFactory(() => AddGithubRepositoryAsContainerUseCase(getIt<ContainerRepository>()));
   getIt.registerFactory(() => StartContainerUseCase(getIt<ContainerRepository>()));
   getIt.registerFactory(() => StopContainerUseCase(getIt<ContainerRepository>()));
   getIt.registerFactory(() => RemoveContainerUseCase(getIt<ContainerRepository>()));
@@ -170,9 +179,17 @@ void setupServiceLocator() {
 
   getIt.registerFactory(() => GetGithubRepositoryUseCase(getIt<GithubApiRepository>()));
   getIt.registerFactory(() => GetGithubUserRepositoriesUseCase(getIt<GithubApiRepository>()));
-
   getIt.registerFactory(() => SearchGithubRepositoriesUseCase(getIt<GithubApiRepository>()));
   getIt.registerFactory(() => GetTrendingRepositoriesUseCase(getIt<GithubApiRepository>()));
+  getIt.registerFactory(() => GetGithubRepositoryBranchesUseCase(getIt<GithubApiRepository>()));
+  getIt.registerFactory(() => GetGithubRepositoryCommitsUseCase(getIt<GithubApiRepository>()));
+  getIt.registerFactory(() => GetGithubRepositoryIssuesUseCase(getIt<GithubApiRepository>()));
+  getIt.registerFactory(() => GetGithubRepositoryContributorsUseCase(getIt<GithubApiRepository>()));
+  getIt.registerFactory(() => GetGithubRepositoryLanguagesUseCase(getIt<GithubApiRepository>()));
+  getIt.registerFactory(() => GetGithubRepositoryReadmeUseCase(getIt<GithubApiRepository>()));
+
+  getIt.registerFactory(() => GetMainServerStatusUseCase(getIt<InfrastructureRepository>()));
+  getIt.registerFactory(() => GetServicesStatusUseCase(getIt<InfrastructureRepository>()));
 
   getIt.registerLazySingleton<AuthService>(
     () => AuthService(getIt<SecureStorageService>()),

@@ -1,12 +1,15 @@
 import 'dart:async';
 import '../../../core/models/container_model.dart';
 
+import '../../../core/models/api/api_models.dart';
+
 class ContainerDTO {
   final String id;
   final String name;
   final bool running;
   final String log;
   final DateTime? startedAt;
+  final GithubRepository? repository;
 
   ContainerDTO({
     required this.id,
@@ -14,6 +17,7 @@ class ContainerDTO {
     required this.running,
     required this.log,
     this.startedAt,
+    this.repository,
   });
 
   ContainerModel toModel() {
@@ -23,6 +27,7 @@ class ContainerDTO {
       isRunning: running,
       log: log,
       startedAt: startedAt,
+      repository: repository,
     );
   }
 
@@ -33,6 +38,7 @@ class ContainerDTO {
       running: model.isRunning,
       log: model.log,
       startedAt: model.startedAt,
+      repository: model.repository,
     );
   }
 }
@@ -63,7 +69,7 @@ class ContainerLocalDataSource {
   }
 
   ContainerModel addContainerFromAvailable(String name) {
-    if (_containers.any((c) => c.name == name)) {
+    if (_containers.any((c) => c.name == name && c.repository == null)) {
       throw StateError('Контейнер уже добавлен');
     }
     
@@ -72,6 +78,24 @@ class ContainerLocalDataSource {
       name: name,
       running: false,
       log: 'Контейнер добавлен из доступных',
+    );
+    _containers.add(dto);
+    _notifyContainersChanged();
+    return dto.toModel();
+  }
+
+  ContainerModel addContainerFromGithubRepository(GithubRepository repository) {
+    final containerName = repository.fullName;
+    if (_containers.any((c) => c.repository?.fullName == containerName)) {
+      throw StateError('Репозиторий уже добавлен как контейнер');
+    }
+    
+    final dto = ContainerDTO(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      name: containerName,
+      running: false,
+      log: 'Контейнер добавлен из GitHub репозитория: ${repository.description ?? repository.name}',
+      repository: repository,
     );
     _containers.add(dto);
     _notifyContainersChanged();
